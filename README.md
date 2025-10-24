@@ -106,8 +106,8 @@ Contributions are welcome! Please see our [Contributing Guide](docs/contributing
 
 ## 📞 Support
 
-- **GitHub Issues**: [Report bugs and request features](https://github.com/MadsenDev/shipwright/issues)
-- **GitHub Discussions**: [Ask questions and discuss](https://github.com/MadsenDev/shipwright/discussions)
+- **GitHub Issues**: [Report bugs and request features](https://github.com/MadsenDev/deploid/issues)
+- **GitHub Discussions**: [Ask questions and discuss](https://github.com/MadsenDev/deploid/discussions)
 
 ---
 
