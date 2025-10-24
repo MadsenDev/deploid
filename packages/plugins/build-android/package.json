@@ -1,0 +1,14 @@
+{
+  "name": "@deploid/plugin-build-android",
+  "version": "0.1.0",
+  "private": false,
+  "type": "module",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc -b"
+  },
+  "dependencies": {
+    "@deploid/core": "workspace:*",
+    "execa": "^8.0.1"
+  }
+}
