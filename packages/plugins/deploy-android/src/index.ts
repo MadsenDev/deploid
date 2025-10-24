@@ -1,9 +1,12 @@
-import { PipelineStep } from '../../../core/dist/index.js';
+// PipelineStep type definition
+interface PipelineStep {
+  (context: { logger: any; config: any; cwd: string }): Promise<void>;
+}
 import { execa } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const deployAndroid = (): PipelineStep => async ({ logger, config, cwd }: any) => {
+const deployAndroid = (): PipelineStep => async ({ logger, config, cwd }: any) => {
   logger.info(`deploy-android: deploying ${config.appName} to connected devices`);
   
   try {
@@ -92,3 +95,6 @@ async function deployToDevice(deviceId: string, apkPath: string, config: any, lo
     throw error;
   }
 }
+
+export default deployAndroid;
+export { deployAndroid };

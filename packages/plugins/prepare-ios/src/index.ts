@@ -1,9 +1,12 @@
-import { PipelineStep } from '../../../core/dist/index.js';
+// PipelineStep type definition
+interface PipelineStep {
+  (context: { logger: any; config: any; cwd: string }): Promise<void>;
+}
 import { execa } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const prepareIos = (): PipelineStep => async ({ logger, config, cwd }: any) => {
+const prepareIos = (): PipelineStep => async ({ logger, config, cwd }: any) => {
   logger.info(`prepare-ios: setting up iOS project for ${config.appName}`);
   
   try {
@@ -471,3 +474,6 @@ For issues with this build process:
   fs.writeFileSync(path.join(docsPath, 'IOS_HANDBOOK.md'), handoffDoc);
   logger.info('📖 Created iOS handoff documentation');
 }
+
+export default prepareIos;
+export { prepareIos };

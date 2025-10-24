@@ -10,7 +10,7 @@ describe('Deploid CLI', () => {
 
   it('should show version', async () => {
     const { stdout } = await execa('node', ['dist/index.js', '--version']);
-    expect(stdout).toContain('0.1.0');
+    expect(stdout).toContain('0.1.13');
   });
 
   it('should list available commands', async () => {

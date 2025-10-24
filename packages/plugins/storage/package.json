@@ -1,0 +1,33 @@
+{
+  "name": "deploid-plugin-storage",
+  "version": "0.1.1",
+  "description": "Cross-platform storage utilities for web and native environments",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist/**/*",
+    "templates/**/*",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc -b",
+    "dev": "tsc -b --watch"
+  },
+  "keywords": [
+    "deploid",
+    "storage",
+    "capacitor",
+    "cross-platform"
+  ],
+  "author": "Deploid Team",
+  "license": "MIT",
+  "dependencies": {
+    "@capacitor/preferences": "^6.0.0 || ^7.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.0.0"
+  },
+  "peerDependencies": {
+    "@capacitor/core": "^6.0.0 || ^7.0.0"
+  }
+}

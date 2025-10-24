@@ -1,6 +1,6 @@
 {
   "name": "deploid",
-  "version": "0.1.2",
+  "version": "0.1.15",
   "description": "Build → package → sign → publish web apps to Android",
   "keywords": [
     "android",
@@ -29,6 +29,7 @@
   "files": [
     "dist/",
     "bin/",
+    "plugins/",
     "README.md"
   ],
   "scripts": {

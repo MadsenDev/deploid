@@ -1,5 +1,5 @@
 {
-  "name": "@deploid/plugin-debug-network",
+  "name": "deploid-plugin-debug-network",
   "version": "0.1.0",
   "type": "module",
   "main": "dist/index.js",
@@ -10,7 +10,5 @@
   "devDependencies": {
     "typescript": "^5.0.0"
   },
-  "dependencies": {
-    "@deploid/core": "workspace:*"
-  }
+  "dependencies": {}
 }

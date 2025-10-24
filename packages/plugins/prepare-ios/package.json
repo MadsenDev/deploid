@@ -1,5 +1,5 @@
 {
-  "name": "@deploid/plugin-prepare-ios",
+  "name": "deploid-plugin-prepare-ios",
   "version": "0.1.0",
   "private": false,
   "type": "module",
@@ -8,7 +8,6 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@deploid/core": "workspace:*",
     "execa": "^8.0.1"
   }
 }

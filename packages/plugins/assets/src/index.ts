@@ -1,9 +1,12 @@
-import { PipelineStep } from '../../../core/dist/index.js';
+// PipelineStep type definition
+interface PipelineStep {
+  (context: { logger: any; config: any; cwd: string }): Promise<void>;
+}
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
 
-export const assetsPlugin = (): PipelineStep => async ({ logger, config, cwd }: any) => {
+const assetsPlugin = (): PipelineStep => async ({ logger, config, cwd }: any) => {
   logger.info('assets-plugin: generating icons and assets');
   
   if (!config.assets?.source) {
@@ -90,4 +93,5 @@ async function generateFavicons(sourcePath: string, outputDir: string, logger: a
   }
 }
 
-
+export default assetsPlugin;
+export { assetsPlugin };

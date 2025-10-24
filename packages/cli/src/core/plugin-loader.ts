@@ -1,57 +1,46 @@
 import { PipelineStep } from './pipeline.js';
 import { ShipwrightConfig } from './types.js';
+import { fileURLToPath } from 'node:url';
+import { dirname, join } from 'node:path';
+import fs from 'node:fs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 export async function loadPlugin(pluginName: string, config: ShipwrightConfig): Promise<PipelineStep> {
-  // For now, we'll load plugins from the local packages
-  // In the future, this could load from npm or local files
-  
-  switch (pluginName) {
-    case 'assets':
-      // Load assets plugin dynamically
-      const assetsPath = new URL('../../plugins/assets/dist/index.js', import.meta.url).pathname;
-      const { assetsPlugin } = await import(assetsPath);
-      return assetsPlugin();
+  try {
+    // First try to load from project's node_modules
+    const projectPluginPath = join(process.cwd(), 'node_modules', `deploid-plugin-${pluginName}`, 'dist', 'index.js');
+    if (fs.existsSync(projectPluginPath)) {
+      const plugin = await import(projectPluginPath);
+      if (plugin.default) {
+        // Call the plugin function to get the PipelineStep
+        return plugin.default();
+      }
+      const pluginFunction = plugin[pluginName.replace(/-/g, '')];
+      if (pluginFunction) {
+        return pluginFunction();
+      }
+    }
     
-    case 'packaging-capacitor':
-      // Load Capacitor plugin dynamically
-      const capacitorPath = new URL('../../plugins/packaging-capacitor/dist/index.js', import.meta.url).pathname;
-      const { packagingCapacitor } = await import(capacitorPath);
-      return packagingCapacitor();
+    // Fallback to bundled plugins in CLI package
+    const bundledPluginPath = join(__dirname, '..', '..', 'plugins', pluginName, 'index.js');
+    const plugin = await import(bundledPluginPath);
     
-    case 'packaging-tauri':
-      // TODO: Implement Tauri plugin
-      return async ({ logger }) => logger.info('Tauri packaging not yet implemented');
+    if (plugin.default) {
+      // Call the plugin function to get the PipelineStep
+      return plugin.default();
+    }
     
-    case 'packaging-twa':
-      // TODO: Implement TWA plugin
-      return async ({ logger }) => logger.info('TWA packaging not yet implemented');
+    // If no default export, look for a function with the plugin name
+    const pluginFunction = plugin[pluginName.replace(/-/g, '')];
+    if (pluginFunction) {
+      return pluginFunction();
+    }
     
-    case 'build-android':
-      // Load Android build plugin
-      const buildPath = new URL('../../plugins/build-android/dist/index.js', import.meta.url).pathname;
-      const { buildAndroidPlugin } = await import(buildPath);
-      return buildAndroidPlugin();
-    
-    case 'debug-network':
-      // Load debug network plugin
-      const debugPath = new URL('../../plugins/debug-network/dist/index.js', import.meta.url).pathname;
-      const { debugNetwork } = await import(debugPath);
-      return async ({ cwd }) => debugNetwork(cwd);
-    
-    case 'deploy-android':
-      // Load deploy Android plugin
-      const deployPath = new URL('../../plugins/deploy-android/dist/index.js', import.meta.url).pathname;
-      const { deployAndroid } = await import(deployPath);
-      return deployAndroid();
-    
-    case 'prepare-ios':
-      // Load prepare iOS plugin
-      const iosPath = new URL('../../plugins/prepare-ios/dist/index.js', import.meta.url).pathname;
-      const { prepareIos } = await import(iosPath);
-      return prepareIos();
-    
-    default:
-      throw new Error(`Unknown plugin: ${pluginName}`);
+    throw new Error(`Plugin ${pluginName} not found or has no default export`);
+  } catch (error) {
+    throw new Error(`Failed to load plugin ${pluginName}: ${error instanceof Error ? error.message : 'Unknown error'}`);
   }
 }
 

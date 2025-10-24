@@ -4,10 +4,10 @@ import path from 'node:path';
 
 export async function loadConfig(cwd: string = process.cwd()): Promise<ShipwrightConfig> {
   const candidates = [
-    'shipwright.config.ts',
-    'shipwright.config.js',
-    'shipwright.config.mjs',
-    'shipwright.config.cjs'
+    'deploid.config.ts',
+    'deploid.config.js',
+    'deploid.config.mjs',
+    'deploid.config.cjs'
   ];
   for (const filename of candidates) {
     const full = path.join(cwd, filename);
@@ -17,7 +17,7 @@ export async function loadConfig(cwd: string = process.cwd()): Promise<Shipwrigh
       return cfg;
     }
   }
-  throw new Error('No shipwright config found');
+  throw new Error('No deploid config found');
 }
 
 function pathToFileURL(p: string): URL {

@@ -1,1 +1,1 @@
-{"root":["./src/firebase.ts","./src/index.ts","./src/init.ts","./src/__tests__/cli.test.ts","./src/core/config.ts","./src/core/index.ts","./src/core/logger.ts","./src/core/pipeline.ts","./src/core/plugin-loader.ts","./src/core/types.ts"],"version":"5.9.3"}
+{"root":["./src/firebase.ts","./src/index.ts","./src/init.ts","./src/plugin-manager.ts","./src/__tests__/cli.test.ts","./src/core/config.ts","./src/core/index.ts","./src/core/logger.ts","./src/core/pipeline.ts","./src/core/plugin-loader.ts","./src/core/types.ts"],"version":"5.9.3"}

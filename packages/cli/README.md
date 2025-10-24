@@ -31,6 +31,11 @@ deploid deploy
 # Setup Firebase for push notifications
 deploid firebase
 
+# Manage plugins
+deploid plugin --list
+deploid plugin --install storage
+deploid plugin --remove debug-network
+
 # Publish to stores
 deploid publish
 ```
@@ -42,9 +47,70 @@ deploid publish
 - **🔨 Build System**: APK/AAB generation with signing
 - **☁️ Publishing**: Play Store and GitHub Releases integration
 - **🔧 Plugin Architecture**: Extensible and modular design
+- **💾 Cross-Platform Storage**: Seamless storage across web and native environments
 - **🔥 Firebase Integration**: Automated push notification setup
 - **📱 Native Deployment**: Direct APK installation to devices
 - **🍎 iOS Preparation**: Generate Xcode projects for Mac handoff
+
+## 💾 Cross-Platform Storage
+
+Deploid includes built-in cross-platform storage utilities that work seamlessly across web and native environments:
+
+```bash
+# Install storage plugin during init
+deploid init
+# Select "Cross-platform storage utilities" when prompted
+```
+
+### Usage
+
+```typescript
+import { crossPlatformStorage } from './lib/storage'
+import { secureStorageUtil } from './lib/secureStorage'
+
+// Store data
+await crossPlatformStorage.set('theme', 'dark')
+await secureStorageUtil.set('authToken', 'secret-token')
+
+// Retrieve data
+const theme = await crossPlatformStorage.get('theme')
+const token = await secureStorageUtil.get('authToken')
+```
+
+**Features:**
+- 🌐 **Web**: Uses localStorage/sessionStorage
+- 📱 **Native**: Uses Capacitor Preferences + Secure Storage
+- 🔒 **Security**: Encrypted storage for sensitive data
+- 🔄 **Migration**: Easy transition from existing localStorage
+
+## 🔧 Plugin Management
+
+Deploid includes a powerful plugin system that you can manage after initialization:
+
+```bash
+# List all available plugins
+deploid plugin --list
+
+# Install a specific plugin
+deploid plugin --install storage
+deploid plugin --install debug-network
+
+# Remove a plugin
+deploid plugin --remove debug-network
+
+# Interactive plugin manager
+deploid plugin
+```
+
+### Available Plugins
+
+- **📦 Assets** - Generate app icons and assets (required)
+- **📱 Packaging** - Capacitor, Tauri, TWA support (required for packaging)
+- **🔨 Build** - Android APK/AAB generation
+- **📲 Deploy** - Direct device deployment via ADB
+- **🍎 iOS** - iOS project preparation for Mac handoff
+- **🐛 Debug** - Network debugging tools
+- **💾 Storage** - Cross-platform storage utilities
 
 ## 🎯 Supported Frameworks
 

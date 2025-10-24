@@ -1,9 +1,12 @@
-import { PipelineStep } from '../../../core/dist/index.js';
+// PipelineStep type definition
+interface PipelineStep {
+  (context: { logger: any; config: any; cwd: string }): Promise<void>;
+}
 import { execa } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export const packagingCapacitor = (): PipelineStep => async ({ logger, config, cwd }: any) => {
+const packagingCapacitor = (): PipelineStep => async ({ logger, config, cwd }: any) => {
   logger.info(`packaging-capacitor: wrapping ${config.appName} for Android`);
   
   try {
@@ -251,6 +254,18 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
             );
           }
           
+          // Check if Firebase is configured and remove Google Services plugin if not
+          const googleServicesJsonPath = path.join(androidDir, 'app/google-services.json');
+          if (!fs.existsSync(googleServicesJsonPath)) {
+            // Remove Google Services plugin application
+            buildGradle = buildGradle.replace(/apply plugin: 'com\.google\.gms\.google-services'\n?/, '');
+            
+            // Remove Firebase dependencies
+            buildGradle = buildGradle.replace(/\/\/ Firebase dependencies\n.*?implementation 'com\.google\.firebase:firebase-messaging:.*?'\n.*?implementation 'com\.google\.firebase:firebase-analytics:.*?'\n?/s, '');
+            
+            logger.debug('Removed Google Services plugin and Firebase dependencies (no google-services.json found)');
+          }
+          
           fs.writeFileSync(buildGradlePath, buildGradle);
           logger.debug(`Updated Java version to 21 in ${path.basename(buildGradlePath)}`);
         }
@@ -398,4 +413,5 @@ async function addDeploymentScripts(cwd: string, logger: any): Promise<void> {
   }
 }
 
-
+export default packagingCapacitor;
+export { packagingCapacitor };

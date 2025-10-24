@@ -1,6 +1,6 @@
 {
-  "name": "@deploid/plugin-assets",
-  "version": "0.1.0",
+  "name": "deploid-plugin-assets",
+  "version": "0.1.1",
   "private": false,
   "type": "module",
   "main": "dist/index.js",
@@ -8,7 +8,6 @@
     "build": "tsc -b"
   },
   "dependencies": {
-    "@deploid/core": "workspace:*",
     "sharp": "^0.33.5"
   }
 }

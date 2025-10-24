@@ -12,6 +12,7 @@ export interface InitOptions {
   firebase?: boolean;
   firebaseProjectId?: string;
   firebaseApiKey?: string;
+  allPlugins?: boolean;
 }
 
 export async function initProject(options: InitOptions): Promise<void> {
@@ -49,6 +50,10 @@ export async function initProject(options: InitOptions): Promise<void> {
   if (options.firebase && options.packaging === 'capacitor') {
     await setupFirebase(cwd, options);
   }
+  
+  // Install plugin dependencies
+  console.log('📦 Installing plugin dependencies...');
+  await installPluginDependencies(cwd, options);
   
   console.log('🎉 Deploid initialized!');
   console.log('Next steps:');
@@ -399,5 +404,108 @@ async function setupFirebase(cwd: string, options: InitOptions): Promise<void> {
   } catch (error) {
     console.log('⚠️  Firebase setup failed:', error);
     console.log('You can set it up manually later with: deploid firebase');
+  }
+}
+
+async function installPluginDependencies(cwd: string, options: InitOptions): Promise<void> {
+  try {
+    // Define available plugins
+    const availablePlugins = {
+      'assets': {
+        name: 'deploid-plugin-assets',
+        description: 'Generate app icons and assets from your logo',
+        required: true // Always needed for basic functionality
+      },
+      'packaging-capacitor': {
+        name: 'deploid-plugin-packaging-capacitor',
+        description: 'Package your app with Capacitor',
+        required: options.packaging === 'capacitor'
+      },
+      'build-android': {
+        name: 'deploid-plugin-build-android',
+        description: 'Build Android APK/AAB files',
+        required: true // Always needed for Android builds
+      },
+      'deploy-android': {
+        name: 'deploid-plugin-deploy-android',
+        description: 'Deploy to Android devices via ADB',
+        required: false
+      },
+      'prepare-ios': {
+        name: 'deploid-plugin-prepare-ios',
+        description: 'Prepare iOS project for Mac handoff',
+        required: false
+      },
+      'debug-network': {
+        name: 'deploid-plugin-debug-network',
+        description: 'Add network debugging tools to your app',
+        required: false
+      },
+      'storage': {
+        name: 'deploid-plugin-storage',
+        description: 'Cross-platform storage utilities for web and native',
+        required: false
+      }
+    };
+
+    // Collect plugins to install
+    const pluginsToInstall: string[] = [];
+    
+    // Add required plugins
+    for (const [key, plugin] of Object.entries(availablePlugins)) {
+      if (plugin.required) {
+        pluginsToInstall.push(plugin.name);
+        console.log(`✅ ${plugin.description} (required)`);
+      }
+    }
+
+    // Ask about optional plugins
+    if (options.allPlugins) {
+      console.log('\n🔧 Installing all optional plugins...');
+      for (const [key, plugin] of Object.entries(availablePlugins)) {
+        if (!plugin.required) {
+          pluginsToInstall.push(plugin.name);
+          console.log(`✅ ${plugin.description}`);
+        }
+      }
+    } else {
+      console.log('\n🔧 Optional plugins:');
+      for (const [key, plugin] of Object.entries(availablePlugins)) {
+        if (!plugin.required) {
+          const rl = readline.createInterface({
+            input: process.stdin,
+            output: process.stdout
+          });
+          
+          const answer = await new Promise<string>((resolve) => {
+            rl.question(`Install ${plugin.description}? (y/N): `, resolve);
+          });
+          rl.close();
+          
+          if (answer.toLowerCase() === 'y' || answer.toLowerCase() === 'yes') {
+            pluginsToInstall.push(plugin.name);
+            console.log(`✅ ${plugin.description}`);
+          } else {
+            console.log(`⏭️  Skipped ${plugin.description}`);
+          }
+        }
+      }
+    }
+    
+    if (pluginsToInstall.length === 0) {
+      console.log('⚠️  No plugins selected. You can install them later with: npm install <plugin-name>');
+      return;
+    }
+    
+    console.log(`\n📦 Installing: ${pluginsToInstall.join(', ')}`);
+    await execa('npm', ['install', ...pluginsToInstall], { 
+      cwd, 
+      stdio: 'inherit' 
+    });
+    
+    console.log('✅ Plugin packages installed');
+  } catch (error) {
+    console.log('⚠️  Failed to install plugin packages:', error);
+    console.log('You can install them manually later with: npm install <plugin-name>');
   }
 }

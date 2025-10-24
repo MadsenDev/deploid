@@ -1,10 +1,9 @@
-// Simple logger for debug plugin
-const logger = {
-  info: (msg: string) => console.log(`[debug-network] ${msg}`),
-  debug: (msg: string) => console.log(`[debug-network] ${msg}`)
+// PipelineStep type definition
+interface PipelineStep {
+  (context: { logger: any; config: any; cwd: string }): Promise<void>;
 }
 
-export const debugNetwork = async (cwd: string) => {
+const debugNetwork = (): PipelineStep => async ({ logger, config, cwd }: any) => {
   logger.info('🔍 Network debugging tools added to your project')
   
   // Create network debug component
@@ -226,4 +225,5 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g
   logger.info('✅ Troubleshooting guide created')
 }
 
-export default debugNetwork
+export default debugNetwork;
+export { debugNetwork };
