@@ -63,11 +63,11 @@ deploid publish
 
 | Command              | Description                                 |
 | -------------------- | ------------------------------------------- |
-| `shipwright init`    | Setup config and base folders               |
-| `shipwright assets`  | Generate all required icons and screenshots |
-| `shipwright package` | Wrap app for Android (Capacitor/Tauri/TWA)  |
-| `shipwright build`   | Build APK/AAB (debug/release)               |
-| `shipwright publish` | Upload build to Play Store or GitHub        |
+| `deploid init`    | Setup config and base folders               |
+| `deploid assets`  | Generate all required icons and screenshots |
+| `deploid package` | Wrap app for Android (Capacitor/Tauri/TWA)  |
+| `deploid build`   | Build APK/AAB (debug/release)               |
+| `deploid publish` | Upload build to Play Store or GitHub        |
 
 ## 📚 Documentation
 
