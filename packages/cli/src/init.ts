@@ -92,6 +92,16 @@ export default {
     minSdk: 24,
     permissions: ['INTERNET'],
     version: { code: 1, name: '1.0.0' },
+    display: {
+      fullscreen: false,
+      orientation: 'portrait',
+      statusBarStyle: 'auto',
+      windowSoftInputMode: 'adjustResize',
+    },
+    build: {
+      minifyEnabled: false,
+      enableMultidex: false,
+    },
   },${firebaseConfig}
   assets: {
     source: 'assets/logo.svg',

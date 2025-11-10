@@ -65,6 +65,30 @@ export default {
       code: 1,
       name: '1.0.0',
     },
+    display: {
+      fullscreen: false,
+      immersive: false,
+      orientation: 'portrait',
+      statusBarStyle: 'auto',
+      statusBarHidden: false,
+      navigationBarHidden: false,
+      windowSoftInputMode: 'adjustResize',
+    },
+    launch: {
+      launchMode: 'standard',
+      allowBackup: true,
+    },
+    build: {
+      enableProguard: false,
+      enableMultidex: false,
+      minifyEnabled: false,
+      shrinkResources: false,
+      buildType: 'apk',
+    },
+    performance: {
+      hardwareAccelerated: true,
+      largeHeap: false,
+    },
   },
   
   // Asset generation
@@ -124,6 +148,44 @@ export default {
 | `version.code` | `number` | ❌ | `1` | Version code (integer) |
 | `version.name` | `string` | ❌ | `'1.0.0'` | Version name (string) |
 
+#### Display Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `display.fullscreen` | `boolean` | ❌ | `false` | Enable fullscreen mode (hides status bar and navigation bar) |
+| `display.immersive` | `boolean` | ❌ | `false` | Enable immersive mode (hides system UI with swipe gesture) |
+| `display.orientation` | `'portrait' \| 'landscape' \| 'sensor' \| 'sensorPortrait' \| 'sensorLandscape' \| 'fullSensor' \| 'reversePortrait' \| 'reverseLandscape'` | ❌ | `'portrait'` | Screen orientation lock |
+| `display.statusBarStyle` | `'light' \| 'dark' \| 'auto'` | ❌ | `'auto'` | Status bar content style (light/dark icons) |
+| `display.statusBarHidden` | `boolean` | ❌ | `false` | Hide status bar |
+| `display.navigationBarHidden` | `boolean` | ❌ | `false` | Hide navigation bar |
+| `display.windowSoftInputMode` | `'adjustResize' \| 'adjustPan' \| 'adjustNothing'` | ❌ | `'adjustResize'` | Keyboard behavior when shown |
+
+#### Launch Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `launch.launchMode` | `'standard' \| 'singleTop' \| 'singleTask' \| 'singleInstance'` | ❌ | `'standard'` | Activity launch mode |
+| `launch.taskAffinity` | `string` | ❌ | - | Task affinity (for grouping activities) |
+| `launch.allowBackup` | `boolean` | ❌ | `true` | Allow Android backup service |
+| `launch.allowClearUserData` | `boolean` | ❌ | `true` | Allow user to clear app data |
+
+#### Build Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `build.enableProguard` | `boolean` | ❌ | `false` | Enable ProGuard/R8 code obfuscation |
+| `build.enableMultidex` | `boolean` | ❌ | `false` | Enable multidex support (for apps with >65k methods) |
+| `build.minifyEnabled` | `boolean` | ❌ | `false` | Enable code minification |
+| `build.shrinkResources` | `boolean` | ❌ | `false` | Remove unused resources (requires minifyEnabled) |
+| `build.buildType` | `'apk' \| 'aab' \| 'both'` | ❌ | `'apk'` | Output format (APK for direct install, AAB for Play Store) |
+
+#### Performance Options
+
+| Option | Type | Required | Default | Description |
+|--------|------|----------|---------|-------------|
+| `performance.hardwareAccelerated` | `boolean` | ❌ | `true` | Enable hardware acceleration |
+| `performance.largeHeap` | `boolean` | ❌ | `false` | Request large heap size (for memory-intensive apps) |
+
 ### Asset Configuration
 
 | Option | Type | Required | Default | Description |
@@ -146,6 +208,95 @@ export default {
 |--------|------|----------|-------------|
 | `repo` | `string` | ✅ | GitHub repository (owner/repo) |
 | `draft` | `boolean` | ❌ | `false` | Create as draft release |
+
+## Android Configuration Examples
+
+### Fullscreen Game App
+
+```typescript
+export default {
+  appName: 'MyGame',
+  appId: 'com.example.mygame',
+  web: {
+    framework: 'vite',
+    buildCommand: 'npm run build',
+    webDir: 'dist',
+  },
+  android: {
+    packaging: 'capacitor',
+    display: {
+      fullscreen: true,
+      immersive: true,
+      orientation: 'landscape',
+      statusBarHidden: true,
+      navigationBarHidden: true,
+    },
+    performance: {
+      hardwareAccelerated: true,
+      largeHeap: true,
+    },
+  },
+};
+```
+
+### Production-Ready App with Optimization
+
+```typescript
+export default {
+  appName: 'MyApp',
+  appId: 'com.example.myapp',
+  web: {
+    framework: 'vite',
+    buildCommand: 'npm run build',
+    webDir: 'dist',
+  },
+  android: {
+    packaging: 'capacitor',
+    display: {
+      orientation: 'portrait',
+      statusBarStyle: 'dark',
+      windowSoftInputMode: 'adjustResize',
+    },
+    build: {
+      enableProguard: true,
+      enableMultidex: true,
+      minifyEnabled: true,
+      shrinkResources: true,
+      buildType: 'aab', // For Play Store
+    },
+    signing: {
+      keystorePath: './release.keystore',
+      alias: 'release',
+      storePasswordEnv: 'KEYSTORE_PASSWORD',
+      keyPasswordEnv: 'KEY_PASSWORD',
+    },
+  },
+};
+```
+
+### Tablet-Optimized App
+
+```typescript
+export default {
+  appName: 'MyTabletApp',
+  appId: 'com.example.tabletapp',
+  web: {
+    framework: 'vite',
+    buildCommand: 'npm run build',
+    webDir: 'dist',
+  },
+  android: {
+    packaging: 'capacitor',
+    display: {
+      orientation: 'sensor', // Allow rotation
+      statusBarStyle: 'auto',
+    },
+    launch: {
+      launchMode: 'singleTask', // Keep single instance
+    },
+  },
+};
+```
 
 ## Framework-Specific Configuration
 

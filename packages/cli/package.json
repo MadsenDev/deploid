@@ -1,6 +1,6 @@
 {
   "name": "deploid",
-  "version": "0.1.15",
+  "version": "0.1.16",
   "description": "Build → package → sign → publish web apps to Android",
   "keywords": [
     "android",

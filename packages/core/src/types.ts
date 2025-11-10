@@ -1,4 +1,8 @@
 export type PackagingEngine = 'capacitor' | 'tauri' | 'twa';
+export type ScreenOrientation = 'portrait' | 'landscape' | 'sensor' | 'sensorPortrait' | 'sensorLandscape' | 'fullSensor' | 'reversePortrait' | 'reverseLandscape';
+export type LaunchMode = 'standard' | 'singleTop' | 'singleTask' | 'singleInstance';
+export type StatusBarStyle = 'light' | 'dark' | 'auto';
+export type WindowSoftInputMode = 'adjustResize' | 'adjustPan' | 'adjustNothing';
 
 export interface ShipwrightConfig {
   appName: string;
@@ -21,6 +25,32 @@ export interface ShipwrightConfig {
       keyPasswordEnv?: string;
     };
     version?: { code: number; name: string };
+    display?: {
+      fullscreen?: boolean;
+      immersive?: boolean;
+      orientation?: ScreenOrientation;
+      statusBarStyle?: StatusBarStyle;
+      statusBarHidden?: boolean;
+      navigationBarHidden?: boolean;
+      windowSoftInputMode?: WindowSoftInputMode;
+    };
+    launch?: {
+      launchMode?: LaunchMode;
+      taskAffinity?: string;
+      allowBackup?: boolean;
+      allowClearUserData?: boolean;
+    };
+    build?: {
+      enableProguard?: boolean;
+      enableMultidex?: boolean;
+      minifyEnabled?: boolean;
+      shrinkResources?: boolean;
+      buildType?: 'apk' | 'aab' | 'both';
+    };
+    performance?: {
+      hardwareAccelerated?: boolean;
+      largeHeap?: boolean;
+    };
   };
   assets?: { source: string; output?: string };
   publish?: {
