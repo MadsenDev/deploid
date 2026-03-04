@@ -43,6 +43,15 @@ Deploid automates the entire process of turning a web app into a ready-to-ship A
 
 - **Capacitor** - Native WebView wrapper
 
+### Desktop GUI
+
+Deploid Studio is available as a desktop app wrapper around CLI workflows:
+
+```bash
+npm install -g @deploid/studio
+deploid-studio
+```
+
 ## 🚀 Quick Start
 
 ```bash

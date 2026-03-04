@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Deploid Studio</title>
+    <style>
+      :root {
+        --bg: #0b1210;
+        --card: #15241f;
+        --line: #254037;
+        --text: #e7fff3;
+        --muted: #9ec8b6;
+        --accent: #56d9a1;
+      }
+      body {
+        margin: 0;
+        font-family: "Segoe UI", Arial, sans-serif;
+        background: radial-gradient(circle at top right, #133226, var(--bg) 50%);
+        color: var(--text);
+      }
+      .wrap {
+        max-width: 980px;
+        margin: 24px auto;
+        padding: 0 16px;
+      }
+      .card {
+        background: linear-gradient(180deg, #1a2f29, var(--card));
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 16px;
+      }
+      .row {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+      }
+      input, select, button {
+        border-radius: 8px;
+        border: 1px solid var(--line);
+        background: #0f1d19;
+        color: var(--text);
+        padding: 10px 12px;
+      }
+      input {
+        flex: 1;
+        min-width: 320px;
+      }
+      button {
+        cursor: pointer;
+      }
+      button.primary {
+        background: var(--accent);
+        color: #062517;
+        border: none;
+        font-weight: 700;
+      }
+      #logs {
+        margin-top: 14px;
+        background: #07110e;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        height: 430px;
+        overflow: auto;
+        padding: 12px;
+        white-space: pre-wrap;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 12px;
+      }
+      .muted {
+        color: var(--muted);
+        font-size: 12px;
+      }
+      @media (max-width: 640px) {
+        input {
+          min-width: 100%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="card">
+        <h2>Deploid Studio</h2>
+        <p class="muted">Run Deploid commands in a selected project folder.</p>
+        <div class="row">
+          <input id="cwd" type="text" placeholder="Project folder..." />
+          <button id="pick">Choose Folder</button>
+        </div>
+        <div class="row" style="margin-top: 10px;">
+          <select id="cmd">
+            <option value="init">init</option>
+            <option value="assets">assets</option>
+            <option value="package">package</option>
+            <option value="build">build</option>
+            <option value="deploy">deploy</option>
+            <option value="devices">devices</option>
+            <option value="logs">logs</option>
+            <option value="uninstall">uninstall</option>
+            <option value="debug">debug</option>
+            <option value="ios">ios</option>
+            <option value="ios:handbook">ios:handbook</option>
+          </select>
+          <button id="run" class="primary">Run Command</button>
+          <button id="stop">Stop</button>
+        </div>
+        <div id="status" class="muted" style="margin-top: 10px;">Idle</div>
+        <div id="logs"></div>
+      </div>
+    </div>
+    <script src="./renderer.js"></script>
+  </body>
+  </html>

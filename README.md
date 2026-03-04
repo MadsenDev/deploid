@@ -77,6 +77,15 @@ deploid firebase
 - [Migration 2.0](docs/MIGRATION_2_0.md)
 - [Deprecation Plan](docs/DEPRECATION_PLAN.md)
 
+## 🖥️ Desktop GUI
+
+Deploid Studio provides a desktop interface for running Deploid in a selected project folder.
+
+```bash
+npm install -g @deploid/studio
+deploid-studio
+```
+
 ## 🎯 Current Status
 
 ✅ **Milestone 1 — Core CLI + Capacitor** (Complete)
