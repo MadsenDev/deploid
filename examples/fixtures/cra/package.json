@@ -1,0 +1,7 @@
+{
+  "name": "fixture-cra",
+  "private": true,
+  "scripts": {
+    "build": "echo cra-build"
+  }
+}

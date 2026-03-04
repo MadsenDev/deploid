@@ -1,61 +1,30 @@
 import { PipelineStep } from './pipeline.js';
-import { ShipwrightConfig } from './types.js';
+import { DeploidConfig, DeploidPlugin } from './types.js';
+import { existsSync } from 'node:fs';
 
-export async function loadPlugin(pluginName: string, config: ShipwrightConfig): Promise<PipelineStep> {
-  // For now, we'll load plugins from the local packages
-  // In the future, this could load from npm or local files
-  
-  switch (pluginName) {
-    case 'assets':
-      // Load assets plugin dynamically
-      const assetsPath = new URL('../../plugins/assets/dist/index.js', import.meta.url).pathname;
-      const { assetsPlugin } = await import(assetsPath);
-      return assetsPlugin();
-    
-    case 'packaging-capacitor':
-      // Load Capacitor plugin dynamically
-      const capacitorPath = new URL('../../plugins/packaging-capacitor/dist/index.js', import.meta.url).pathname;
-      const { packagingCapacitor } = await import(capacitorPath);
-      return packagingCapacitor();
-    
-    case 'packaging-tauri':
-      // TODO: Implement Tauri plugin
-      return async ({ logger }) => logger.info('Tauri packaging not yet implemented');
-    
-    case 'packaging-twa':
-      // TODO: Implement TWA plugin
-      return async ({ logger }) => logger.info('TWA packaging not yet implemented');
-    
-    case 'build-android':
-      // Load Android build plugin
-      const buildPath = new URL('../../plugins/build-android/dist/index.js', import.meta.url).pathname;
-      const { buildAndroidPlugin } = await import(buildPath);
-      return buildAndroidPlugin();
-    
-    case 'debug-network':
-      // Load debug network plugin
-      const debugPath = new URL('../../plugins/debug-network/dist/index.js', import.meta.url).pathname;
-      const { debugNetwork } = await import(debugPath);
-      return async ({ cwd }) => debugNetwork(cwd);
-    
-    case 'deploy-android':
-      // Load deploy Android plugin
-      const deployPath = new URL('../../plugins/deploy-android/dist/index.js', import.meta.url).pathname;
-      const { deployAndroid } = await import(deployPath);
-      return deployAndroid();
-    
-    case 'prepare-ios':
-      // Load prepare iOS plugin
-      const iosPath = new URL('../../plugins/prepare-ios/dist/index.js', import.meta.url).pathname;
-      const { prepareIos } = await import(iosPath);
-      return prepareIos();
-    
-    default:
-      throw new Error(`Unknown plugin: ${pluginName}`);
+export async function loadPlugin(pluginName: string, config: DeploidConfig): Promise<PipelineStep> {
+  // Keep config in signature for future plugin selection hooks.
+  void config;
+
+  const packageName = `deploid-plugin-${pluginName}`;
+
+  // First resolve plugin as an installed package.
+  try {
+    return instantiatePlugin(await import(packageName), pluginName);
+  } catch {
+    // Fall through to monorepo/dev fallback.
   }
+
+  // Fallback for monorepo/dev usage when packages are built locally.
+  const localPluginPath = new URL(`../../plugins/${pluginName}/dist/index.js`, import.meta.url).pathname;
+  if (existsSync(localPluginPath)) {
+    return instantiatePlugin(await import(localPluginPath), pluginName);
+  }
+
+  throw new Error(`Plugin "${pluginName}" not found. Expected package "${packageName}".`);
 }
 
-export async function loadPluginsFromConfig(config: ShipwrightConfig): Promise<PipelineStep[]> {
+export async function loadPluginsFromConfig(config: DeploidConfig): Promise<PipelineStep[]> {
   const steps: PipelineStep[] = [];
   
   // Load plugins based on config
@@ -68,4 +37,53 @@ export async function loadPluginsFromConfig(config: ShipwrightConfig): Promise<P
   steps.push(await loadPlugin(packagingPlugin, config));
   
   return steps;
+}
+
+function instantiatePlugin(mod: Record<string, unknown>, pluginName: string): PipelineStep {
+  if (mod.default && isPluginObject(mod.default)) {
+    return wrapPlugin(mod.default);
+  }
+
+  if (typeof mod.default === 'function') {
+    return (mod.default as () => PipelineStep)();
+  }
+
+  const candidates = [
+    pluginName.replace(/-/g, ''),
+    `${pluginName.replace(/-/g, '')}Plugin`,
+    pluginName
+  ];
+
+  for (const key of candidates) {
+    const value = mod[key];
+    if (value && isPluginObject(value)) {
+      return wrapPlugin(value);
+    }
+    if (typeof value === 'function') {
+      return (value as () => PipelineStep)();
+    }
+  }
+
+  throw new Error(`Plugin "${pluginName}" has no callable export.`);
+}
+
+function isPluginObject(value: unknown): value is DeploidPlugin {
+  return typeof value === 'object' && value !== null && 'run' in value && typeof (value as { run: unknown }).run === 'function';
+}
+
+function wrapPlugin(plugin: DeploidPlugin): PipelineStep {
+  return async (ctx) => {
+    if (plugin.plan) {
+      const plan = await plugin.plan({ cwd: ctx.cwd, config: ctx.config });
+      if (ctx.debug && plan.length) {
+        ctx.logger.debugStep(`plugin ${plugin.name} plan`, plan);
+      }
+    }
+
+    if (plugin.validate) {
+      await plugin.validate({ cwd: ctx.cwd, config: ctx.config, logger: ctx.logger });
+    }
+
+    await plugin.run(ctx);
+  };
 }

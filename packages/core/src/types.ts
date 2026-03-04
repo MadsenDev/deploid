@@ -4,7 +4,7 @@ export type LaunchMode = 'standard' | 'singleTop' | 'singleTask' | 'singleInstan
 export type StatusBarStyle = 'light' | 'dark' | 'auto';
 export type WindowSoftInputMode = 'adjustResize' | 'adjustPan' | 'adjustNothing';
 
-export interface ShipwrightConfig {
+export interface DeploidConfig {
   appName: string;
   appId: string;
   web: {
@@ -60,4 +60,10 @@ export interface ShipwrightConfig {
   plugins?: string[];
 }
 
-
+export interface DeploidPlugin {
+  name: string;
+  requirements?: string[];
+  validate?: (ctx: { cwd: string; config: DeploidConfig; logger: { info: (msg: string) => void } }) => Promise<void>;
+  plan?: (ctx: { cwd: string; config: DeploidConfig }) => Promise<string[]> | string[];
+  run: (ctx: { cwd: string; config: DeploidConfig; logger: unknown; debug?: boolean }) => Promise<void>;
+}

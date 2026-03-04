@@ -6,7 +6,7 @@ import { execa } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const deployAndroid = (): PipelineStep => async ({ logger, config, cwd }: any) => {
+const runDeployAndroid: PipelineStep = async ({ logger, config, cwd }: any) => {
   logger.info(`deploy-android: deploying ${config.appName} to connected devices`);
   
   try {
@@ -17,7 +17,7 @@ const deployAndroid = (): PipelineStep => async ({ logger, config, cwd }: any) =
     const apkPath = path.join(cwd, 'android/app/build/outputs/apk/debug/app-debug.apk');
     
     if (!fs.existsSync(apkPath)) {
-      logger.error('APK not found. Run "shipwright build" first.');
+      logger.error('APK not found. Run "deploid build" first.');
       throw new Error('APK not found');
     }
     
@@ -45,6 +45,30 @@ const deployAndroid = (): PipelineStep => async ({ logger, config, cwd }: any) =
     throw error;
   }
 };
+
+const plugin = {
+  name: 'deploy-android',
+  requirements: ['adb'],
+  plan: () => ['Verify adb availability', 'Find built APK', 'Install APK on connected devices'],
+  validate: async ({ cwd }: any) => {
+    await assertCommand('adb', ['version']);
+    const apkPath = path.join(cwd, 'android/app/build/outputs/apk/debug/app-debug.apk');
+    if (!fs.existsSync(apkPath)) {
+      throw new Error('APK not found. Run "deploid build" first.');
+    }
+  },
+  run: runDeployAndroid
+};
+
+const deployAndroid = (): PipelineStep => runDeployAndroid;
+
+async function assertCommand(command: string, args: string[]): Promise<void> {
+  try {
+    await execa(command, args, { stdio: 'pipe' });
+  } catch {
+    throw new Error(`Required command not found: ${command}`);
+  }
+}
 
 async function checkAdbInstalled(logger: any): Promise<void> {
   try {
@@ -96,5 +120,5 @@ async function deployToDevice(deviceId: string, apkPath: string, config: any, lo
   }
 }
 
-export default deployAndroid;
-export { deployAndroid };
+export default plugin;
+export { deployAndroid, plugin };

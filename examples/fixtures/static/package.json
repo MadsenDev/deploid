@@ -1,0 +1,7 @@
+{
+  "name": "fixture-static",
+  "private": true,
+  "scripts": {
+    "build": "echo static-build"
+  }
+}

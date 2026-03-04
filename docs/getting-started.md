@@ -27,10 +27,10 @@ pnpm -r build
 ./install-global.sh
 
 # Now you can use the deploid command
-./deploid --help
+deploid --help
 
 # Or add to your PATH for global access
-export PATH=$PATH:$(pwd)
+export PATH="$PATH:$HOME/.local/bin"
 deploid --help
 ```
 

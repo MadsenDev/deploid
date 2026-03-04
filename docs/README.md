@@ -2,7 +2,7 @@
 
 **From build to publish — one command.**
 
-Deploid is a unified build-to-publish toolchain for web apps that turns them into Android apps (APK/AAB) and optionally publishes them to the Play Store or GitHub.
+Deploid is a unified build pipeline for web apps that turns them into Android apps (APK/AAB).
 
 ## 📚 Table of Contents
 
@@ -13,6 +13,8 @@ Deploid is a unified build-to-publish toolchain for web apps that turns them int
 - [CLI Reference](cli-reference.md)
 - [Examples](examples.md)
 - [Contributing](contributing.md)
+- [Migration 2.0](MIGRATION_2_0.md)
+- [Deprecation Plan](DEPRECATION_PLAN.md)
 
 ## 🎯 What is Deploid?
 
@@ -21,12 +23,12 @@ Deploid automates the entire process of turning a web app into a ready-to-ship A
 ### Key Features
 
 - **🖼️ Asset Generation**: Automatic icon generation for all Android densities and PWA
-- **📦 Multi-Engine Packaging**: Capacitor, Tauri, and TWA support
+- **📦 Packaging**: Capacitor-based Android packaging
 - **🔨 Build System**: APK/AAB generation with signing
 - **📱 iOS Preparation**: Complete iOS project setup for Mac handoff
 - **🚀 Deployment**: Direct APK deployment to Android devices
 - **🐛 Debug Tools**: Network debugging and troubleshooting components
-- **☁️ Publishing**: Play Store and GitHub Releases integration
+- **☁️ Publishing**: Planned for future release
 - **🔧 Plugin Architecture**: Extensible and modular design
 - **⚙️ CI/CD Ready**: GitHub Actions generator
 
@@ -40,8 +42,6 @@ Deploid automates the entire process of turning a web app into a ready-to-ship A
 ### Supported Packaging Engines
 
 - **Capacitor** - Native WebView wrapper
-- **Tauri** - Rust-based desktop/mobile (planned)
-- **TWA** - Trusted Web Activity (planned)
 
 ## 🚀 Quick Start
 
@@ -53,22 +53,22 @@ pnpm install
 ./install-global.sh
 
 # Initialize a project
-./deploid init
+deploid init
 
 # Add your logo
 cp your-logo.svg assets/logo.svg
 
 # Generate all required assets
-./deploid assets
+deploid assets
 
 # Package for Android
-./deploid package
+deploid package
 
 # Build APK/AAB
-./deploid build
+deploid build
 
-# Publish to stores
-./deploid publish
+# Deploy to a connected device
+deploid deploy
 ```
 
 ## 📁 Project Structure
@@ -82,7 +82,6 @@ deploid/
 │       ├── assets/             # Icon/screenshot generation
 │       ├── packaging-capacitor/ # Capacitor packaging
 │       └── build-android/      # APK/AAB building
-├── templates/                  # Template files for different engines
 ├── examples/                   # Example projects
 └── docs/                       # Documentation
 ```
@@ -93,7 +92,7 @@ deploid/
 | -------------------- | ------------------------------------------- |
 | `deploid init`    | Setup config and base folders               |
 | `deploid assets`  | Generate all required icons and screenshots |
-| `deploid package` | Wrap app for Android (Capacitor/Tauri/TWA)  |
+| `deploid package` | Wrap app for Android (Capacitor)             |
 | `deploid build`   | Build APK/AAB (debug/release)               |
 | `deploid debug`   | Add network debugging tools to your project  |
 | `deploid deploy`  | Deploy APK to connected Android devices     |
@@ -101,9 +100,9 @@ deploid/
 | `deploid logs`   | View app logs from connected device          |
 | `deploid uninstall` | Uninstall app from connected devices      |
 | `deploid ios`     | Prepare iOS project for Mac handoff          |
-| `deploid ios:assets` | Generate iOS app icons and launch screens |
+| `deploid ios:assets` | Not implemented in 2.0                    |
 | `deploid ios:handbook` | Generate iOS handoff documentation      |
-| `deploid publish` | Upload build to Play Store or GitHub        |
+| `deploid publish` | Not implemented in 2.0                       |
 
 ## 🎯 Current Status
 
