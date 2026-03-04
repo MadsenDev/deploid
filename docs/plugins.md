@@ -500,7 +500,7 @@ describe('Plugin Integration', () => {
 
 ```json
 {
-  "name": "deploid-plugin-my-plugin",
+  "name": "@deploid/plugin-my-plugin",
   "version": "1.0.0",
   "main": "dist/index.js",
   "files": ["dist"],
@@ -520,14 +520,14 @@ pnpm link
 
 # Use in project
 cd my-project
-pnpm link deploid-plugin-my-plugin
+pnpm link @deploid/plugin-my-plugin
 ```
 
 ## Plugin Registry (Future)
 
 Planned features for plugin discovery and management:
 
-- **NPM-based discovery**: `deploid-plugin-*` packages
+- **NPM-based discovery**: `@deploid/plugin-*` packages
 - **Plugin validation**: Automated testing and validation
 - **Version compatibility**: Plugin version requirements
 - **Documentation**: Auto-generated plugin documentation

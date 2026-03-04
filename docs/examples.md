@@ -358,7 +358,7 @@ jobs:
         run: npm ci
         
       - name: Install Deploid
-        run: npm install -g deploid
+        run: npm install -g @deploid/cli
         
       - name: Generate assets
         run: deploid assets
@@ -396,7 +396,7 @@ build:
   stage: build
   image: node:${NODE_VERSION}
   before_script:
-    - npm install -g deploid
+    - npm install -g @deploid/cli
   script:
     - deploid assets
     - deploid package
@@ -429,7 +429,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                sh 'npm install -g deploid'
+                sh 'npm install -g @deploid/cli'
             }
         }
         
@@ -567,7 +567,7 @@ COPY package*.json ./
 RUN npm ci --only=production
 
 # Install Deploid
-RUN npm install -g deploid
+RUN npm install -g @deploid/cli
 
 # Copy source
 COPY . .

@@ -472,7 +472,7 @@ jobs:
           node-version: '18'
       
       - name: Install Deploid
-        run: npm install -g deploid
+        run: npm install -g @deploid/cli
       
       - name: Generate Assets
         run: deploid assets

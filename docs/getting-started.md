@@ -45,13 +45,13 @@ node packages/cli/dist/index.js --help
 
 ```bash
 # Install from npm (when published)
-npm install -g deploid
+npm install -g @deploid/cli
 
 # Or with pnpm
-pnpm add -g deploid
+pnpm add -g @deploid/cli
 
 # Or with yarn
-yarn global add deploid
+yarn global add @deploid/cli
 
 # Then use anywhere
 deploid --help

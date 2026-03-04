@@ -6,7 +6,7 @@ export async function loadPlugin(pluginName: string, config: DeploidConfig): Pro
   // Keep config in signature for future plugin selection hooks.
   void config;
 
-  const packageName = `deploid-plugin-${pluginName}`;
+  const packageName = `@deploid/plugin-${pluginName}`;
 
   // First resolve plugin as an installed package.
   try {

@@ -1,6 +1,9 @@
 {
-  "name": "deploid-plugin-debug-network",
+  "name": "@deploid/plugin-debug-network",
   "version": "2.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

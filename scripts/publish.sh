@@ -1,9 +1,9 @@
 #!/bin/bash
-# Publish Shipwright to npm
+# Publish Deploid CLI to npm
 
 set -e
 
-echo "🚀 Publishing Shipwright to npm..."
+echo "🚀 Publishing Deploid CLI to npm..."
 
 # Check if logged in to npm
 if ! npm whoami > /dev/null 2>&1; then
@@ -17,7 +17,7 @@ pnpm -r build
 
 # Check if version is already published
 CURRENT_VERSION=$(node -p "require('./package.json').version")
-if npm view deploid@$CURRENT_VERSION version > /dev/null 2>&1; then
+if npm view @deploid/cli@$CURRENT_VERSION version > /dev/null 2>&1; then
     echo "❌ Version $CURRENT_VERSION already published. Please bump version."
     exit 1
 fi
@@ -26,8 +26,8 @@ fi
 echo "📤 Publishing to npm..."
 npm publish
 
-echo "✅ Shipwright published successfully!"
+echo "✅ Deploid CLI published successfully!"
 echo ""
 echo "Users can now install with:"
-echo "  npm install -g deploid"
+echo "  npm install -g @deploid/cli"
 echo "  deploid --help"
