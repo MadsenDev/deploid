@@ -163,7 +163,7 @@ cd packages/plugins/my-plugin
 2. **Setup package.json**:
 ```json
 {
-  "name": "@deploid/plugin-my-plugin",
+  "name": "deploid-plugin-my-plugin",
   "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -449,13 +449,13 @@ We are committed to providing a welcoming and inclusive environment for all cont
 
 - **Milestone 1**: Core CLI + Capacitor ✅
 - **Milestone 2**: Release + CI (in progress)
-- **Milestone 3**: TWA & Tauri (planned)
+- **Milestone 3**: Expanded packaging engines (planned)
 - **Milestone 4**: Polish (planned)
 
 ### Contributing Areas
 
 - **Core functionality**: Pipeline, configuration, logging
-- **Plugins**: Assets, packaging, build, publish
+- **Plugins**: Assets, packaging, build (publish planned)
 - **Documentation**: Guides, examples, API docs
 - **Testing**: Unit, integration, e2e tests
 - **Examples**: Framework-specific examples

@@ -1,6 +1,6 @@
 # Deploid Documentation
 
-**From build to publish — one command.**
+**From build to Android package — one command.**
 
 Deploid is a unified build pipeline for web apps that turns them into Android apps (APK/AAB).
 

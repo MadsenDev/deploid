@@ -332,9 +332,9 @@ export default {
 
 ### GitHub Actions
 
-**Complete CI/CD Pipeline**:
+**Build Pipeline (2.0)**:
 ```yaml
-name: Build and Publish
+name: Build Android Package
 on:
   push:
     tags: ['v*']
@@ -375,10 +375,8 @@ jobs:
           ANDROID_STORE_PWD: ${{ secrets.ANDROID_STORE_PWD }}
           ANDROID_KEY_PWD: ${{ secrets.ANDROID_KEY_PWD }}
           
-      - name: Upload to GitHub
-        run: deploid publish
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # Deploid 2.0 note:
+      # "deploid publish" is not implemented yet.
 ```
 
 ### GitLab CI
@@ -387,7 +385,6 @@ jobs:
 ```yaml
 stages:
   - build
-  - publish
 
 variables:
   NODE_VERSION: "18"
@@ -406,13 +403,8 @@ build:
       - android/app/build/outputs/
     expire_in: 1 week
 
-publish:
-  stage: publish
-  image: node:${NODE_VERSION}
-  script:
-    - deploid publish
-  only:
-    - tags
+# Deploid 2.0 note:
+# publish stage is omitted because "deploid publish" is not implemented.
 ```
 
 ### Jenkins Pipeline
@@ -451,14 +443,8 @@ pipeline {
             }
         }
         
-        stage('Publish') {
-            when {
-                tag 'v*'
-            }
-            steps {
-                sh 'deploid publish'
-            }
-        }
+        // Deploid 2.0 note:
+        // publish stage omitted because "deploid publish" is not implemented.
     }
 }
 ```

@@ -101,7 +101,7 @@ cd android
 ### For Production
 1. **Set up signing**: Create Android keystore
 2. **Build release**: Generate signed AAB for Play Store
-3. **Publish**: Upload to Play Store or GitHub
+3. **Distribution**: Upload manually (publish automation is not implemented in 2.0)
 
 ### For Development
 - Use `deploid debug` to add network testing tools
@@ -117,7 +117,7 @@ cd android
 | `deploid package` | Wrap app for Android |
 | `deploid build` | Build APK/AAB |
 | `deploid debug` | Add debugging tools |
-| `deploid publish` | Upload to stores |
+| `deploid publish` | Not implemented in 2.0 |
 
 ## Need Help?
 
