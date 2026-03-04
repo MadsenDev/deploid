@@ -51,7 +51,7 @@ export default {
   
   // Android configuration
   android: {
-    packaging: 'capacitor', // 'capacitor' | 'tauri' | 'twa'
+    packaging: 'capacitor', // 'capacitor' (2.0)
     targetSdk: 34,
     minSdk: 24,
     permissions: ['INTERNET', 'CAMERA'],
@@ -137,7 +137,7 @@ export default {
 
 | Option | Type | Required | Default | Description |
 |--------|------|----------|---------|-------------|
-| `packaging` | `'capacitor' \| 'tauri' \| 'twa'` | ✅ | - | Android packaging engine |
+| `packaging` | `'capacitor'` | ✅ | - | Android packaging engine in 2.0 |
 | `targetSdk` | `number` | ❌ | `34` | Target Android SDK version |
 | `minSdk` | `number` | ❌ | `24` | Minimum Android SDK version |
 | `permissions` | `string[]` | ❌ | `['INTERNET']` | Android permissions |
@@ -194,6 +194,8 @@ export default {
 | `output` | `string` | ❌ | `'assets-gen/'` | Output directory for generated assets |
 
 ### Publish Configuration
+
+`publish` fields are reserved for a future automated publish workflow. `deploid publish` is not implemented in 2.0.
 
 #### Play Store
 
@@ -383,29 +385,13 @@ export default {
 };
 ```
 
-### Tauri (Planned)
+### Tauri (Not Supported in 2.0)
 
-```typescript
-export default {
-  android: {
-    packaging: 'tauri',
-    targetSdk: 34,
-    minSdk: 24,
-  },
-};
-```
+Tauri packaging is planned for a future release and is not currently available.
 
-### TWA (Planned)
+### TWA (Not Supported in 2.0)
 
-```typescript
-export default {
-  android: {
-    packaging: 'twa',
-    targetSdk: 34,
-    minSdk: 24,
-  },
-};
-```
+Trusted Web Activity packaging is planned for a future release and is not currently available.
 
 ## Environment Variables
 

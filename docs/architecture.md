@@ -22,7 +22,6 @@ deploid/
 │       ├── assets/             # Asset generation
 │       ├── packaging-capacitor/ # Capacitor integration
 │       └── build-android/      # Android building
-├── templates/                  # Project templates
 ├── examples/                   # Example projects
 └── docs/                       # Documentation
 ```
@@ -66,9 +65,9 @@ deploid/
 
 **Plugin Types**:
 - **Assets**: Icon and screenshot generation
-- **Packaging**: Web app wrapping (Capacitor, Tauri, TWA)
+- **Packaging**: Web app wrapping (Capacitor in 2.0)
 - **Build**: APK/AAB generation
-- **Publish**: Store distribution
+- **Publish**: Planned for future release
 
 ## 🔄 Pipeline Execution
 
@@ -89,12 +88,11 @@ await runPipeline(ctx, [plugin]);
 ### 3. Plugin Interface
 
 ```typescript
-export type PipelineStep = (ctx: PipelineContext) => Promise<void>;
-
-export interface PipelineContext {
-  cwd: string;
-  config: DeploidConfig;
-  logger: Logger;
+export interface DeploidPlugin {
+  name: string;
+  validate?: (ctx) => Promise<void>;
+  plan?: (ctx) => Promise<string[]>;
+  run: (ctx) => Promise<void>;
 }
 ```
 
@@ -114,19 +112,25 @@ packages/plugins/plugin-name/
 ### Plugin Interface
 
 ```typescript
-// Plugin factory function
-export const myPlugin = (): PipelineStep => async ({ logger, config, cwd }) => {
-  logger.info('Plugin executing...');
-  // Plugin logic here
+export default {
+  name: 'my-plugin',
+  async validate(ctx) {
+    // optional preflight
+  },
+  async plan(ctx) {
+    return ['Step 1', 'Step 2'];
+  },
+  async run({ logger }) {
+    logger.info('Plugin executing...');
+  }
 };
 ```
 
 ### Plugin Loading
 
 ```typescript
-// Dynamic loading with relative paths
-const pluginPath = new URL('../../plugins/plugin-name/dist/index.js', import.meta.url).pathname;
-const { myPlugin } = await import(pluginPath);
+// Resolve installed package first, then local monorepo fallback.
+const plugin = await loadPlugin('my-plugin', config);
 ```
 
 ## 🔧 Configuration System
@@ -152,7 +156,7 @@ export interface DeploidConfig {
   web: WebConfig;
   android: AndroidConfig;
   assets?: AssetConfig;
-  publish?: PublishConfig;
+  publish?: PublishConfig; // reserved for future automated publishing
   plugins?: string[];
 }
 ```
@@ -162,7 +166,7 @@ export interface DeploidConfig {
 ### 1. Initialization Flow
 
 ```
-init command → Generate config → Create directories → Setup templates
+init command → Generate config → Create directories → Setup baseline files
 ```
 
 ### 2. Asset Generation Flow
@@ -196,7 +200,7 @@ cd packages/plugins/my-plugin
 2. **Setup package.json**:
 ```json
 {
-  "name": "@deploid/plugin-my-plugin",
+  "name": "deploid-plugin-my-plugin",
   "version": "0.0.0",
   "type": "module",
   "main": "dist/index.js",
@@ -216,12 +220,9 @@ export const myPlugin = (): PipelineStep => async ({ logger, config, cwd }) => {
 };
 ```
 
-4. **Register in plugin loader**:
-```typescript
-case 'my-plugin':
-  const myPluginPath = new URL('../../plugins/my-plugin/dist/index.js', import.meta.url).pathname;
-  const { myPlugin } = await import(myPluginPath);
-  return myPlugin();
+4. **Install and load as package**:
+```bash
+pnpm add deploid-plugin-my-plugin
 ```
 
 ## 🎯 Design Principles
