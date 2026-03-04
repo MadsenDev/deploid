@@ -2,11 +2,11 @@
 interface PipelineStep {
   (context: { logger: any; config: any; cwd: string }): Promise<void>;
 }
-import { execa } from 'execa';
+import { execa, execaCommand } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const packagingCapacitor = (): PipelineStep => async ({ logger, config, cwd }: any) => {
+const runPackagingCapacitor: PipelineStep = async ({ logger, config, cwd }: any) => {
   logger.info(`packaging-capacitor: wrapping ${config.appName} for Android`);
   
   try {
@@ -29,7 +29,7 @@ const packagingCapacitor = (): PipelineStep => async ({ logger, config, cwd }: a
     await copyAndroidIcons(cwd, config, logger);
     
     // Add deployment scripts to package.json
-    await addDeploymentScripts(cwd, logger);
+    await addDeploymentScripts(cwd, config, logger);
     
     // Add push notifications plugin
     await addPushNotificationsPlugin(cwd, logger);
@@ -41,13 +41,37 @@ const packagingCapacitor = (): PipelineStep => async ({ logger, config, cwd }: a
   }
 };
 
+const plugin = {
+  name: 'packaging-capacitor',
+  requirements: ['npm', 'npx'],
+  plan: () => ['Initialize Capacitor', 'Sync web build', 'Add Android platform', 'Apply Android configuration'],
+  validate: async ({ cwd }: any) => {
+    await assertCommand('npm', ['--version']);
+    await assertCommand('npx', ['--version']);
+    const packageJsonPath = path.join(cwd, 'package.json');
+    if (!fs.existsSync(packageJsonPath)) {
+      throw new Error('package.json not found in project root');
+    }
+  },
+  run: runPackagingCapacitor
+};
+
+const packagingCapacitor = (): PipelineStep => runPackagingCapacitor;
+
+async function assertCommand(command: string, args: string[]): Promise<void> {
+  try {
+    await execa(command, args, { stdio: 'pipe' });
+  } catch {
+    throw new Error(`Required command not found: ${command}`);
+  }
+}
+
 async function checkCapacitorInstalled(logger: any): Promise<void> {
   try {
     await execa('npx', ['@capacitor/cli', '--version'], { stdio: 'pipe' });
     logger.debug('Capacitor CLI found');
   } catch (error) {
-    logger.warn('Capacitor CLI not found, installing...');
-    await execa('npm', ['install', '-g', '@capacitor/cli'], { stdio: 'inherit' });
+    throw new Error('Capacitor CLI not available. Install @capacitor/cli in your project dependencies.');
   }
 }
 
@@ -70,7 +94,7 @@ async function syncWebAssets(cwd: string, config: any, logger: any): Promise<voi
   
   // First build the web app
   logger.info(`Building web app: ${config.web.buildCommand}`);
-  await execa('npm', ['run', 'build'], { cwd, stdio: 'inherit' });
+  await execaCommand(config.web.buildCommand, { cwd, stdio: 'inherit' });
   
   // Then sync with Capacitor
   await execa('npx', ['@capacitor/cli', 'sync'], { cwd, stdio: 'inherit' });
@@ -311,8 +335,8 @@ org.gradle.caching=true
 org.gradle.daemon=true
 org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
 `;
-      fs.writeFileSync(gradlePropertiesPath, gradleProperties);
-      logger.debug('Created gradle.properties with Java 21 and AndroidX configuration');
+      writeFileIfChanged(gradlePropertiesPath, gradleProperties);
+      logger.debug('Ensured gradle.properties with Java 21 and AndroidX configuration');
       
       // Create network security configuration for HTTPS/HTTP requests
       const networkSecurityConfigPath = path.join(androidDir, 'app/src/main/res/xml/network_security_config.xml');
@@ -347,7 +371,7 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
       if (!fs.existsSync(xmlDir)) {
         fs.mkdirSync(xmlDir, { recursive: true });
       }
-      fs.writeFileSync(networkSecurityConfigPath, networkSecurityConfig);
+      writeFileIfChanged(networkSecurityConfigPath, networkSecurityConfig);
       logger.debug('Created network security configuration');
       
       // Update AndroidManifest.xml with network security config, display options, and additional permissions
@@ -481,7 +505,7 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
           );
         }
         
-        fs.writeFileSync(manifestPath, manifestContent);
+        writeFileIfChanged(manifestPath, manifestContent);
         logger.debug('Updated AndroidManifest.xml with display, launch, and performance options');
       }
       
@@ -600,7 +624,7 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
           logger.debug('Removed Google Services plugin and Firebase dependencies (no google-services.json found)');
         }
         
-        fs.writeFileSync(appBuildGradlePath, buildGradle);
+        writeFileIfChanged(appBuildGradlePath, buildGradle);
         logger.debug('Updated app/build.gradle with build options');
       }
       
@@ -639,7 +663,7 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
             );
           }
           
-          fs.writeFileSync(buildGradlePath, buildGradle);
+          writeFileIfChanged(buildGradlePath, buildGradle);
           logger.debug(`Updated Java version to 21 in ${path.basename(buildGradlePath)}`);
         }
       }
@@ -655,7 +679,7 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
           "classpath 'com.android.tools.build:gradle:8.12.0'"
         );
         
-        fs.writeFileSync(rootBuildGradlePath, rootBuildGradle);
+        writeFileIfChanged(rootBuildGradlePath, rootBuildGradle);
         logger.debug('Updated Gradle version to 8.12.0 for Java 21 support');
       }
       
@@ -670,7 +694,7 @@ org.gradle.jvmargs=-Xmx4g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8
           'distributionUrl=https\\://services.gradle.org/distributions/gradle-8.13-all.zip'
         );
         
-        fs.writeFileSync(gradleWrapperPropertiesPath, gradleWrapperProperties);
+        writeFileIfChanged(gradleWrapperPropertiesPath, gradleWrapperProperties);
         logger.debug('Updated Gradle wrapper to 8.13 for Java 21 support');
       }
     }
@@ -731,6 +755,19 @@ async function copyAndroidIcons(cwd: string, config: any, logger: any): Promise<
 }
 
 async function addPushNotificationsPlugin(cwd: string, logger: any): Promise<void> {
+  const packageJsonPath = path.join(cwd, 'package.json');
+  if (!fs.existsSync(packageJsonPath)) return;
+
+  const packageJson = JSON.parse(fs.readFileSync(packageJsonPath, 'utf8'));
+  const alreadyInstalled = Boolean(
+    packageJson.dependencies?.['@capacitor/push-notifications'] ||
+    packageJson.devDependencies?.['@capacitor/push-notifications']
+  );
+  if (alreadyInstalled) {
+    logger.debug('@capacitor/push-notifications already installed');
+    return;
+  }
+
   logger.info('Adding push notifications plugin...');
   
   try {
@@ -748,7 +785,7 @@ async function addPushNotificationsPlugin(cwd: string, logger: any): Promise<voi
   }
 }
 
-async function addDeploymentScripts(cwd: string, logger: any): Promise<void> {
+async function addDeploymentScripts(cwd: string, config: any, logger: any): Promise<void> {
   const packageJsonPath = path.join(cwd, 'package.json');
   
   if (fs.existsSync(packageJsonPath)) {
@@ -763,10 +800,10 @@ async function addDeploymentScripts(cwd: string, logger: any): Promise<void> {
       const deploymentScripts = {
         'deploy:phone': 'adb install -r android/app/build/outputs/apk/debug/app-debug.apk',
         'deploy:phone-force': 'adb install -r -d android/app/build/outputs/apk/debug/app-debug.apk',
-        'deploy:uninstall': 'adb uninstall com.example.myapp',
+        'deploy:uninstall': `adb uninstall ${config.appId}`,
         'deploy:list': 'adb devices',
-        'deploy:logcat': 'adb logcat | grep -i "MyApp"',
-        'deploy:clean': 'adb shell pm clear com.example.myapp'
+        'deploy:logcat': `adb logcat | grep -i "${config.appName}"`,
+        'deploy:clean': `adb shell pm clear ${config.appId}`
       };
       
       // Only add scripts that don't already exist
@@ -777,8 +814,8 @@ async function addDeploymentScripts(cwd: string, logger: any): Promise<void> {
       }
       
       // Write updated package.json
-      fs.writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2));
-      logger.debug('Added deployment scripts to package.json');
+      writeFileIfChanged(packageJsonPath, JSON.stringify(packageJson, null, 2) + '\n');
+      logger.debug('Ensured deployment scripts in package.json');
       
     } catch (error) {
       logger.warn(`Could not add deployment scripts: ${error}`);
@@ -786,5 +823,13 @@ async function addDeploymentScripts(cwd: string, logger: any): Promise<void> {
   }
 }
 
-export default packagingCapacitor;
-export { packagingCapacitor };
+export default plugin;
+export { packagingCapacitor, plugin };
+
+function writeFileIfChanged(filePath: string, content: string): void {
+  if (fs.existsSync(filePath)) {
+    const current = fs.readFileSync(filePath, 'utf8');
+    if (current === content) return;
+  }
+  fs.writeFileSync(filePath, content);
+}

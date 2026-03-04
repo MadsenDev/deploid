@@ -6,7 +6,7 @@ import { execa } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
 
-const buildAndroidPlugin = (): PipelineStep => async ({ logger, config, cwd, debug }: any) => {
+const runBuildAndroid: PipelineStep = async ({ logger, config, cwd, debug }: any) => {
   logger.info(`build-android: building APK/AAB for ${config.appName}`);
   
   if (debug) {
@@ -22,7 +22,7 @@ const buildAndroidPlugin = (): PipelineStep => async ({ logger, config, cwd, deb
     }
     
     if (!fs.existsSync(androidPath)) {
-      throw new Error('Android project not found. Run "shipwright package" first.');
+      throw new Error('Android project not found. Run "deploid package" first.');
     }
     
     // Build debug APK
@@ -113,5 +113,29 @@ const buildAndroidPlugin = (): PipelineStep => async ({ logger, config, cwd, deb
   }
 };
 
-export default buildAndroidPlugin;
-export { buildAndroidPlugin };
+const plugin = {
+  name: 'build-android',
+  requirements: ['java', 'android-sdk'],
+  plan: () => ['Validate Android project', 'Build debug APK', 'Build signed release AAB (optional)'],
+  validate: async ({ cwd }: any) => {
+    const androidPath = path.join(cwd, 'android');
+    if (!fs.existsSync(androidPath)) {
+      throw new Error('Android project not found. Run "deploid package" first.');
+    }
+    await assertCommand('java', ['-version']);
+  },
+  run: runBuildAndroid
+};
+
+const buildAndroidPlugin = (): PipelineStep => runBuildAndroid;
+
+async function assertCommand(command: string, args: string[]): Promise<void> {
+  try {
+    await execa(command, args, { stdio: 'pipe' });
+  } catch {
+    throw new Error(`Required command not found: ${command}`);
+  }
+}
+
+export default plugin;
+export { buildAndroidPlugin, plugin };

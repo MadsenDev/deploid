@@ -17,7 +17,7 @@ pnpm -r build
 
 # Check if version is already published
 CURRENT_VERSION=$(node -p "require('./package.json').version")
-if npm view shipwright@$CURRENT_VERSION version > /dev/null 2>&1; then
+if npm view deploid@$CURRENT_VERSION version > /dev/null 2>&1; then
     echo "❌ Version $CURRENT_VERSION already published. Please bump version."
     exit 1
 fi
@@ -29,5 +29,5 @@ npm publish
 echo "✅ Shipwright published successfully!"
 echo ""
 echo "Users can now install with:"
-echo "  npm install -g shipwright"
-echo "  shipwright --help"
+echo "  npm install -g deploid"
+echo "  deploid --help"

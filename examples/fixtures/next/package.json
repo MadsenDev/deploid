@@ -1,0 +1,7 @@
+{
+  "name": "fixture-next",
+  "private": true,
+  "scripts": {
+    "build": "echo next-build"
+  }
+}

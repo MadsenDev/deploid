@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { createContext, loadConfig, runPipeline, loadPlugin } from './core/index.js';
+import { createContext, loadConfig, runPipeline, loadPlugin } from '@deploid/core';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -45,6 +45,9 @@ program
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
     const config = await loadConfig();
+    if (config.android.packaging !== 'capacitor') {
+      throw new Error(`Packaging engine "${config.android.packaging}" is not supported in Deploid 2.0. Use "capacitor".`);
+    }
     const ctx = createContext(process.cwd(), config, options.debug);
     const packagingStep = await loadPlugin(`packaging-${config.android.packaging}`, config);
     await runPipeline(ctx, [packagingStep]);
@@ -91,7 +94,7 @@ program
   .action(async (options) => {
     const { execa } = await import('execa');
     try {
-      const { stdout } = await execa('adb', ['devices'], { stdio: 'inherit' });
+      await execa('adb', ['devices'], { stdio: 'inherit' });
     } catch (error) {
       console.error('❌ ADB not found. Please install Android SDK Platform Tools.');
       console.log('Install: sudo pacman -S android-tools');
@@ -107,7 +110,8 @@ program
     const { execa } = await import('execa');
     try {
       await execa('adb', ['logcat', '-c']); // Clear logs
-      await execa('adb', ['logcat', '|', 'grep', '-i', config.appName], { stdio: 'inherit' });
+      console.log(`Showing device logs (filter manually for "${config.appName}")...`);
+      await execa('adb', ['logcat'], { stdio: 'inherit' });
     } catch (error) {
       console.error('❌ Failed to view logs:', error);
     }
@@ -144,11 +148,7 @@ program
   .description('Generate iOS app icons and launch screens')
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
-    const config = await loadConfig();
-    const ctx = createContext(process.cwd(), config, options.debug);
-    // This would integrate with the assets plugin for iOS-specific generation
-    console.log('📱 iOS assets generation - coming soon!');
-    console.log('For now, add your app icons to: ios/App/App/Assets.xcassets/AppIcon.appiconset/');
+    throw new Error('`deploid ios:assets` is not implemented in Deploid 2.0 yet.');
   });
 
 program
@@ -190,11 +190,7 @@ program
   .description('Upload to Play Store or GitHub')
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
-    const config = await loadConfig();
-    const ctx = createContext(process.cwd(), config, options.debug);
-    await runPipeline(ctx, [async ({ logger }) => logger.info('publish: stub')]);
+    throw new Error('`deploid publish` is not implemented in Deploid 2.0 yet.');
   });
 
 program.parseAsync();
-
-

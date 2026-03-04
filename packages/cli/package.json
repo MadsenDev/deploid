@@ -1,6 +1,6 @@
 {
   "name": "deploid",
-  "version": "0.1.16",
+  "version": "2.0.0",
   "description": "Build → package → sign → publish web apps to Android",
   "keywords": [
     "android",
@@ -29,17 +29,23 @@
   "files": [
     "dist/",
     "bin/",
-    "plugins/",
     "README.md"
   ],
   "scripts": {
     "build": "tsc -b",
     "dev": "tsx src/index.ts",
-    "test": "vitest",
+    "test": "vitest run",
     "prepublishOnly": "pnpm build"
   },
   "dependencies": {
+    "@deploid/core": "workspace:*",
     "commander": "^12.1.0",
+    "deploid-plugin-assets": "workspace:*",
+    "deploid-plugin-build-android": "workspace:*",
+    "deploid-plugin-debug-network": "workspace:*",
+    "deploid-plugin-deploy-android": "workspace:*",
+    "deploid-plugin-packaging-capacitor": "workspace:*",
+    "deploid-plugin-prepare-ios": "workspace:*",
     "execa": "^8.0.1"
   },
   "engines": {

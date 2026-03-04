@@ -1,0 +1,7 @@
+{
+  "name": "fixture-vite",
+  "private": true,
+  "scripts": {
+    "build": "echo vite-build"
+  }
+}

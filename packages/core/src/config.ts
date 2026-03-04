@@ -1,23 +1,23 @@
-import { ShipwrightConfig } from './types.js';
+import { DeploidConfig } from './types.js';
 import fs from 'node:fs';
 import path from 'node:path';
 
-export async function loadConfig(cwd: string = process.cwd()): Promise<ShipwrightConfig> {
+export async function loadConfig(cwd: string = process.cwd()): Promise<DeploidConfig> {
   const candidates = [
-    'shipwright.config.ts',
-    'shipwright.config.js',
-    'shipwright.config.mjs',
-    'shipwright.config.cjs'
+    'deploid.config.ts',
+    'deploid.config.js',
+    'deploid.config.mjs',
+    'deploid.config.cjs'
   ];
   for (const filename of candidates) {
     const full = path.join(cwd, filename);
     if (fs.existsSync(full)) {
       const mod = await import(pathToFileURL(full).href);
-      const cfg = (mod.default || mod) as ShipwrightConfig;
+      const cfg = (mod.default || mod) as DeploidConfig;
       return cfg;
     }
   }
-  throw new Error('No shipwright config found');
+  throw new Error('No deploid config found');
 }
 
 function pathToFileURL(p: string): URL {
@@ -26,5 +26,4 @@ function pathToFileURL(p: string): URL {
   url.pathname = resolved;
   return url;
 }
-
 

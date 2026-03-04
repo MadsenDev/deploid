@@ -24,7 +24,7 @@ deploid init [options]
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `-f, --framework <framework>` | `string` | `vite` | Web framework (vite\|next\|cra\|static) |
-| `-p, --packaging <engine>` | `string` | `capacitor` | Android packaging engine (capacitor\|tauri\|twa) |
+| `-p, --packaging <engine>` | `string` | `capacitor` | Android packaging engine (`capacitor` only in 2.0) |
 
 #### Examples
 
@@ -35,8 +35,8 @@ deploid init
 # Initialize for Next.js with Capacitor
 deploid init --framework next --packaging capacitor
 
-# Initialize for Vite with Tauri
-deploid init --framework vite --packaging tauri
+# Deploid 2.0 supports capacitor packaging only
+deploid init --framework vite --packaging capacitor
 ```
 
 #### Generated Files
@@ -97,6 +97,8 @@ For Capacitor packaging, this command:
 4. **Syncs Assets** - Copies web assets to Capacitor
 5. **Adds Android Platform** - Creates Android project
 6. **Updates Configuration** - Sets SDK versions, permissions, etc.
+
+Deploid 2.0 supports `capacitor` packaging only.
 
 #### Generated Files
 
@@ -244,11 +246,9 @@ Generate iOS app icons and launch screens.
 deploid ios:assets
 ```
 
-#### Generated Assets
+#### Status
 
-- iOS app icon set (all required sizes)
-- Launch screen assets
-- Asset catalog structure
+Not implemented in Deploid 2.0. Command returns an explicit error.
 
 ### `deploid ios:handbook`
 
@@ -257,6 +257,18 @@ Generate iOS handoff documentation.
 ```bash
 deploid ios:handbook
 ```
+
+### `deploid publish`
+
+Upload to Play Store or GitHub.
+
+```bash
+deploid publish
+```
+
+#### Status
+
+Not implemented in Deploid 2.0. Command returns an explicit error.
 
 #### Generated Files
 

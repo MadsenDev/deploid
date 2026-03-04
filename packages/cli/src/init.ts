@@ -18,6 +18,10 @@ export interface InitOptions {
 export async function initProject(options: InitOptions): Promise<void> {
   const cwd = process.cwd();
   const configPath = path.join(cwd, 'deploid.config.ts');
+
+  if (options.packaging !== 'capacitor') {
+    throw new Error(`Packaging engine "${options.packaging}" is not supported in Deploid 2.0. Use "capacitor".`);
+  }
   
   // Check if config already exists
   if (fs.existsSync(configPath)) {
@@ -223,6 +227,11 @@ async function createCapacitorTemplate(cwd: string): Promise<void> {
 }
 
 async function createTauriTemplate(cwd: string): Promise<void> {
+  const tauriDir = path.join(cwd, 'src-tauri');
+  if (!fs.existsSync(tauriDir)) {
+    fs.mkdirSync(tauriDir, { recursive: true });
+  }
+
   const tauriConfig = `{
   "build": {
     "beforeDevCommand": "npm run dev",
@@ -269,11 +278,16 @@ async function createTauriTemplate(cwd: string): Promise<void> {
   }
 }`;
 
-  fs.writeFileSync(path.join(cwd, 'src-tauri/tauri.conf.json'), tauriConfig);
+  fs.writeFileSync(path.join(tauriDir, 'tauri.conf.json'), tauriConfig);
   console.log('✅ Created tauri.conf.json');
 }
 
 async function createTWATemplate(cwd: string): Promise<void> {
+  const publicDir = path.join(cwd, 'public');
+  if (!fs.existsSync(publicDir)) {
+    fs.mkdirSync(publicDir, { recursive: true });
+  }
+
   const manifest = `{
   "name": "MyApp",
   "short_name": "MyApp",
@@ -296,7 +310,7 @@ async function createTWATemplate(cwd: string): Promise<void> {
   ]
 }`;
 
-  fs.writeFileSync(path.join(cwd, 'public/manifest.json'), manifest);
+  fs.writeFileSync(path.join(publicDir, 'manifest.json'), manifest);
   console.log('✅ Created public/manifest.json');
 }
 
@@ -327,7 +341,7 @@ async function askFirebaseSetup(): Promise<{ enabled: boolean; projectId?: strin
     console.log('\n📋 Firebase Setup Options:');
     console.log('1. Auto-create Firebase project (requires Firebase CLI)');
     console.log('2. Use existing Firebase project');
-    console.log('3. Skip for now (add later with: shipwright firebase)');
+    console.log('3. Skip for now (add later with: deploid firebase)');
     
     const choice = await question('Choose an option (1-3): ');
     

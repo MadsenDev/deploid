@@ -1,9 +1,9 @@
 #!/bin/bash
-# Setup Shipwright for development
+# Setup Deploid for development
 
 set -e
 
-echo "🚀 Setting up Shipwright for development..."
+echo "🚀 Setting up Deploid for development..."
 
 # Build all packages
 echo "📦 Building packages..."
@@ -12,7 +12,7 @@ pnpm -r build
 # Create symlink for global access
 echo "🔗 Creating global symlink..."
 mkdir -p ~/.local/bin
-ln -sf $(pwd)/shipwright ~/.local/bin/shipwright
+ln -sf "$(pwd)/packages/cli/bin/deploid" ~/.local/bin/deploid
 
 # Add to PATH if not already there
 if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
@@ -21,16 +21,16 @@ if ! echo "$PATH" | grep -q "$HOME/.local/bin"; then
     echo "⚠️  Please run 'source ~/.bashrc' or restart your terminal"
 fi
 
-echo "✅ Shipwright setup complete!"
+echo "✅ Deploid setup complete!"
 echo ""
 echo "You can now use:"
-echo "  shipwright --help"
-echo "  shipwright init"
-echo "  shipwright assets"
-echo "  shipwright package"
-echo "  shipwright build"
-echo "  shipwright publish"
+echo "  deploid --help"
+echo "  deploid init"
+echo "  deploid assets"
+echo "  deploid package"
+echo "  deploid build"
+echo "  deploid publish"
 echo ""
-echo "If 'shipwright' command not found, run:"
+echo "If 'deploid' command not found, run:"
 echo "  source ~/.bashrc"
 echo "  # or restart your terminal"
