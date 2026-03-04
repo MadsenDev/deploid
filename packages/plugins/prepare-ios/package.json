@@ -1,7 +1,10 @@
 {
-  "name": "deploid-plugin-prepare-ios",
+  "name": "@deploid/plugin-prepare-ios",
   "version": "2.0.0",
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "dist/index.js",
   "scripts": {

@@ -12,37 +12,37 @@ export interface PluginManagerOptions {
 // Available plugins with their details
 const availablePlugins = {
   'assets': {
-    name: 'deploid-plugin-assets',
+    name: '@deploid/plugin-assets',
     description: 'Generate app icons and assets from your logo',
     required: true
   },
   'packaging-capacitor': {
-    name: 'deploid-plugin-packaging-capacitor',
+    name: '@deploid/plugin-packaging-capacitor',
     description: 'Package your app with Capacitor',
     required: false
   },
   'build-android': {
-    name: 'deploid-plugin-build-android',
+    name: '@deploid/plugin-build-android',
     description: 'Build Android APK/AAB files',
     required: false
   },
   'deploy-android': {
-    name: 'deploid-plugin-deploy-android',
+    name: '@deploid/plugin-deploy-android',
     description: 'Deploy to Android devices via ADB',
     required: false
   },
   'prepare-ios': {
-    name: 'deploid-plugin-prepare-ios',
+    name: '@deploid/plugin-prepare-ios',
     description: 'Prepare iOS project for Mac handoff',
     required: false
   },
   'debug-network': {
-    name: 'deploid-plugin-debug-network',
+    name: '@deploid/plugin-debug-network',
     description: 'Add network debugging tools to your app',
     required: false
   },
   'storage': {
-    name: 'deploid-plugin-storage',
+    name: '@deploid/plugin-storage',
     description: 'Cross-platform storage utilities for web and native',
     required: false
   }

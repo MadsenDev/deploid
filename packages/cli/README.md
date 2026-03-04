@@ -8,7 +8,7 @@ Deploid CLI turns a web app into a packaged Android app using a Capacitor-based 
 
 ```bash
 # Install globally
-npm install -g deploid
+npm install -g @deploid/cli
 
 # Initialize in your web app directory
 deploid init

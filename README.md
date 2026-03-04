@@ -8,7 +8,7 @@ Deploid automates the entire process of turning a web app into a ready-to-ship A
 
 ```bash
 # Install globally
-npm install -g deploid
+npm install -g @deploid/cli
 
 # Initialize a project
 deploid init

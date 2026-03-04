@@ -1,5 +1,5 @@
 {
-  "name": "deploid",
+  "name": "@deploid/cli",
   "version": "2.0.0",
   "description": "Build → package → sign → publish web apps to Android",
   "keywords": [
@@ -21,6 +21,9 @@
     "url": "https://github.com/MadsenDev/deploid/issues"
   },
   "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "dist/index.js",
   "bin": {
@@ -40,12 +43,12 @@
   "dependencies": {
     "@deploid/core": "workspace:*",
     "commander": "^12.1.0",
-    "deploid-plugin-assets": "workspace:*",
-    "deploid-plugin-build-android": "workspace:*",
-    "deploid-plugin-debug-network": "workspace:*",
-    "deploid-plugin-deploy-android": "workspace:*",
-    "deploid-plugin-packaging-capacitor": "workspace:*",
-    "deploid-plugin-prepare-ios": "workspace:*",
+    "@deploid/plugin-assets": "workspace:*",
+    "@deploid/plugin-build-android": "workspace:*",
+    "@deploid/plugin-debug-network": "workspace:*",
+    "@deploid/plugin-deploy-android": "workspace:*",
+    "@deploid/plugin-packaging-capacitor": "workspace:*",
+    "@deploid/plugin-prepare-ios": "workspace:*",
     "execa": "^8.0.1"
   },
   "engines": {

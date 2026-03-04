@@ -166,7 +166,47 @@ Status: not implemented in 2.0 (fails fast).
 export DEPLOID_LOG_LEVEL=debug
 ```
 
-### Android Signing
+## Integration with CI/CD
+
+### GitHub Actions
+
+```yaml
+name: Build and Publish
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+      
+      - name: Install Deploid
+        run: npm install -g @deploid/cli
+      
+      - name: Generate Assets
+        run: deploid assets
+      
+      - name: Package for Android
+        run: deploid package
+      
+      - name: Build APK/AAB
+        run: deploid build
+        env:
+          ANDROID_STORE_PWD: ${{ secrets.ANDROID_STORE_PWD }}
+          ANDROID_KEY_PWD: ${{ secrets.ANDROID_KEY_PWD }}
+      
+      - name: Publish to GitHub
+        run: deploid publish
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+```
+
+### Local Development
 
 ```bash
 export ANDROID_STORE_PWD="..."

@@ -23,27 +23,27 @@ importers:
       '@deploid/core':
         specifier: workspace:*
         version: link:../core
+      '@deploid/plugin-assets':
+        specifier: workspace:*
+        version: link:../plugins/assets
+      '@deploid/plugin-build-android':
+        specifier: workspace:*
+        version: link:../plugins/build-android
+      '@deploid/plugin-debug-network':
+        specifier: workspace:*
+        version: link:../plugins/debug-network
+      '@deploid/plugin-deploy-android':
+        specifier: workspace:*
+        version: link:../plugins/deploy-android
+      '@deploid/plugin-packaging-capacitor':
+        specifier: workspace:*
+        version: link:../plugins/packaging-capacitor
+      '@deploid/plugin-prepare-ios':
+        specifier: workspace:*
+        version: link:../plugins/prepare-ios
       commander:
         specifier: ^12.1.0
         version: 12.1.0
-      deploid-plugin-assets:
-        specifier: workspace:*
-        version: link:../plugins/assets
-      deploid-plugin-build-android:
-        specifier: workspace:*
-        version: link:../plugins/build-android
-      deploid-plugin-debug-network:
-        specifier: workspace:*
-        version: link:../plugins/debug-network
-      deploid-plugin-deploy-android:
-        specifier: workspace:*
-        version: link:../plugins/deploy-android
-      deploid-plugin-packaging-capacitor:
-        specifier: workspace:*
-        version: link:../plugins/packaging-capacitor
-      deploid-plugin-prepare-ios:
-        specifier: workspace:*
-        version: link:../plugins/prepare-ios
       execa:
         specifier: ^8.0.1
         version: 8.0.1

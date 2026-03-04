@@ -1,6 +1,9 @@
 {
-  "name": "deploid-plugin-storage",
+  "name": "@deploid/plugin-storage",
   "version": "2.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Cross-platform storage utilities for web and native environments",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

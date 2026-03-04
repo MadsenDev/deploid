@@ -436,37 +436,37 @@ async function installPluginDependencies(cwd: string, options: InitOptions): Pro
     // Define available plugins
     const availablePlugins = {
       'assets': {
-        name: 'deploid-plugin-assets',
+        name: '@deploid/plugin-assets',
         description: 'Generate app icons and assets from your logo',
         required: true // Always needed for basic functionality
       },
       'packaging-capacitor': {
-        name: 'deploid-plugin-packaging-capacitor',
+        name: '@deploid/plugin-packaging-capacitor',
         description: 'Package your app with Capacitor',
         required: options.packaging === 'capacitor'
       },
       'build-android': {
-        name: 'deploid-plugin-build-android',
+        name: '@deploid/plugin-build-android',
         description: 'Build Android APK/AAB files',
         required: true // Always needed for Android builds
       },
       'deploy-android': {
-        name: 'deploid-plugin-deploy-android',
+        name: '@deploid/plugin-deploy-android',
         description: 'Deploy to Android devices via ADB',
         required: false
       },
       'prepare-ios': {
-        name: 'deploid-plugin-prepare-ios',
+        name: '@deploid/plugin-prepare-ios',
         description: 'Prepare iOS project for Mac handoff',
         required: false
       },
       'debug-network': {
-        name: 'deploid-plugin-debug-network',
+        name: '@deploid/plugin-debug-network',
         description: 'Add network debugging tools to your app',
         required: false
       },
       'storage': {
-        name: 'deploid-plugin-storage',
+        name: '@deploid/plugin-storage',
         description: 'Cross-platform storage utilities for web and native',
         required: false
       }
