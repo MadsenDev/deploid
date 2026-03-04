@@ -1,6 +1,6 @@
 # Deploid
 
-**From build to publish — one command.**
+**From build to Android package — one command.**
 
 Deploid automates the entire process of turning a web app into a ready-to-ship Android package.
 
@@ -31,16 +31,16 @@ deploid deploy
 # Setup Firebase for push notifications
 deploid firebase
 
-# Publish to stores
-deploid publish
+# Publish support is planned for a future release
+# (deploid publish currently returns "not implemented")
 ```
 
 ## ✨ Features
 
 - **🖼️ Asset Generation**: Automatic icon generation for all Android densities and PWA
-- **📦 Multi-Engine Packaging**: Capacitor, Tauri, and TWA support
+- **📦 Packaging**: Capacitor-based Android packaging
 - **🔨 Build System**: APK/AAB generation with signing
-- **☁️ Publishing**: Play Store and GitHub Releases integration
+- **☁️ Publishing**: Planned for a future release
 - **🔧 Plugin Architecture**: Extensible and modular design
 - **🔥 Firebase Integration**: Automated push notification setup
 - **📱 Native Deployment**: Direct APK installation to devices
@@ -56,8 +56,6 @@ deploid publish
 ## 📦 Supported Packaging Engines
 
 - **Capacitor** - Native WebView wrapper
-- **Tauri** - Rust-based desktop/mobile (planned)
-- **TWA** - Trusted Web Activity (planned)
 
 ## 🧩 Commands
 
@@ -65,9 +63,9 @@ deploid publish
 | -------------------- | ------------------------------------------- |
 | `deploid init`    | Setup config and base folders               |
 | `deploid assets`  | Generate all required icons and screenshots |
-| `deploid package` | Wrap app for Android (Capacitor/Tauri/TWA)  |
+| `deploid package` | Wrap app for Android (Capacitor)             |
 | `deploid build`   | Build APK/AAB (debug/release)               |
-| `deploid publish` | Upload build to Play Store or GitHub        |
+| `deploid publish` | Not implemented in 2.0                      |
 
 ## 📚 Documentation
 
@@ -76,6 +74,8 @@ deploid publish
 - [CLI Reference](docs/cli-reference.md)
 - [Examples](docs/examples.md)
 - [Contributing](docs/contributing.md)
+- [Migration 2.0](docs/MIGRATION_2_0.md)
+- [Deprecation Plan](docs/DEPRECATION_PLAN.md)
 
 ## 🎯 Current Status
 
