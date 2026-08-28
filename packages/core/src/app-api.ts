@@ -1,6 +1,7 @@
 import { createContext, runPipeline, type PipelineContext } from './pipeline.js';
 import { loadConfig } from './config.js';
 import { loadPlugin } from './plugin-loader.js';
+import { withResolvedAndroidToolchainEnvironment } from './toolchain-env.js';
 import type { DeploidConfig } from './types.js';
 
 export interface CommandRunOptions {
@@ -56,12 +57,14 @@ export async function runPluginCommand(pluginName: string, options: CommandRunOp
 export async function runDoctorCommand(options: DoctorRunOptions = {}): Promise<PipelineContext> {
   const cwd = options.cwd || process.cwd();
   const config = options.config || await loadConfigOptional(cwd);
-  return runPluginCommand('doctor', {
+
+  return withResolvedAndroidToolchainEnvironment(cwd, (toolchain) => runPluginCommand('doctor', {
     cwd,
     config,
     debug: options.debug,
     contextExtras: {
-      doctorOptions: options.doctorOptions || {}
+      doctorOptions: options.doctorOptions || {},
+      androidToolchain: toolchain
     }
-  });
+  }));
 }
