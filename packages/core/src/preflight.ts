@@ -1,5 +1,9 @@
 import { buildDoctorStateFromToolchain, type DoctorState, type DoctorStateCheck } from './doctor-state.js';
-import { resolveAndroidToolchain, type AndroidToolchain } from './toolchain.js';
+import {
+  resolveAndroidToolchain,
+  type AndroidToolchain,
+  type ResolveAndroidToolchainOptions
+} from './toolchain.js';
 
 export type AndroidPreflightIntent = 'package' | 'build' | 'deploy' | 'release';
 
@@ -12,8 +16,7 @@ export interface AndroidPreflightResult {
   ok: boolean;
 }
 
-export interface InspectAndroidPreflightOptions {
-  cwd?: string;
+export interface InspectAndroidPreflightOptions extends ResolveAndroidToolchainOptions {
   intent?: AndroidPreflightIntent;
 }
 
@@ -25,9 +28,11 @@ const REQUIRED_CHECKS: Record<AndroidPreflightIntent, Set<string>> = {
 };
 
 export function inspectAndroidPreflight(options: InspectAndroidPreflightOptions = {}): AndroidPreflightResult {
-  const cwd = options.cwd ?? process.cwd();
   const intent = options.intent ?? 'build';
-  const toolchain = resolveAndroidToolchain({ cwd, minimumJavaMajor: 17 });
+  const toolchain = resolveAndroidToolchain({
+    ...options,
+    minimumJavaMajor: options.minimumJavaMajor ?? 17
+  });
   const state = buildDoctorStateFromToolchain(toolchain);
   const required = REQUIRED_CHECKS[intent];
   const blockers = state.blockers.filter((check) => required.has(check.id));
