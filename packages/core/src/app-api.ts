@@ -1,6 +1,7 @@
 import { createContext, runPipeline, type PipelineContext } from './pipeline.js';
 import { loadConfig } from './config.js';
 import { loadPlugin } from './plugin-loader.js';
+import { buildDoctorStateFromToolchain } from './doctor-state.js';
 import { withResolvedAndroidToolchainEnvironment } from './toolchain-env.js';
 import type { DeploidConfig } from './types.js';
 
@@ -64,7 +65,8 @@ export async function runDoctorCommand(options: DoctorRunOptions = {}): Promise<
     debug: options.debug,
     contextExtras: {
       doctorOptions: options.doctorOptions || {},
-      androidToolchain: toolchain
+      androidToolchain: toolchain,
+      doctorState: buildDoctorStateFromToolchain(toolchain)
     }
   }));
 }
