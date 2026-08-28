@@ -7,7 +7,16 @@
   "scripts": {
     "build": "tsc -b"
   },
+  "imports": {
+    "#core": {
+      "types": "../../core/dist/index.d.ts",
+      "default": "../../core/dist/index.js"
+    }
+  },
   "dependencies": {
     "execa": "^8.0.1"
+  },
+  "devDependencies": {
+    "@deploid/core": "workspace:*"
   }
 }
