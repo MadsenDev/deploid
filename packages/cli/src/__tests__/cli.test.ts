@@ -300,7 +300,6 @@ describe('Deploid CLI', () => {
 
     const { stdout, exitCode } = runCli(['artifacts', '--list', '--kind', 'desktop', '--json'], { cwd: tmpDir });
     const payload = JSON.parse(stdout);
-
     expect(exitCode).toBe(0);
     expect(Array.isArray(payload.artifacts)).toBe(true);
     expect(payload.artifacts).toHaveLength(1);
@@ -312,21 +311,11 @@ describe('Deploid CLI', () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-artifacts-clean-'));
     await fs.mkdir(path.join(tmpDir, 'dist-electron'), { recursive: true });
     await fs.writeFile(path.join(tmpDir, 'dist-electron', 'app.exe'), 'desktop');
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'ArtifactsApp',
-  appId: 'com.example.artifactsapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: { packaging: 'capacitor' }
-};\n`
-    );
-
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'ArtifactsApp', appId: 'com.example.artifactsapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor' } };\n`);
     const dryRun = runCli(['artifacts', 'clean', '--kind', 'desktop', '--dry-run'], { cwd: tmpDir });
     expect(dryRun.exitCode).toBe(0);
     expect(dryRun.stdout).toContain('artifact clean dry-run: 1 target(s)');
     expect(fsSync.existsSync(path.join(tmpDir, 'dist-electron'))).toBe(true);
-
     const actual = runCli(['artifacts', 'clean', '--kind', 'desktop'], { cwd: tmpDir });
     expect(actual.exitCode).toBe(0);
     expect(actual.stdout).toContain('Removed 1 artifact target(s).');
@@ -335,12 +324,10 @@ describe('Deploid CLI', () => {
 
   it('should scaffold and validate a plugin package', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-plugin-init-'));
-
     const init = runCli(['plugin', 'init', 'hello-world', '--dir', 'custom-plugin'], { cwd: tmpDir });
     expect(init.exitCode).toBe(0);
     expect(init.stdout).toContain('Created plugin scaffold');
     expect(fsSync.existsSync(path.join(tmpDir, 'custom-plugin', 'src', 'index.ts'))).toBe(true);
-
     const validate = runCli(['plugin', 'validate', 'custom-plugin', '--json'], { cwd: tmpDir });
     const report = JSON.parse(validate.stdout);
     expect(validate.exitCode).toBe(0);
@@ -350,26 +337,10 @@ describe('Deploid CLI', () => {
 
   it('should dry-run a version bump as json', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-version-plan-'));
-    await fs.writeFile(
-      path.join(tmpDir, 'package.json'),
-      JSON.stringify({ name: 'version-fixture', version: '1.2.3' }, null, 2)
-    );
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'VersionApp',
-  appId: 'com.example.versionapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: {
-    packaging: 'capacitor',
-    version: { code: 7, name: '1.2.3' }
-  }
-};\n`
-    );
-
+    await fs.writeFile(path.join(tmpDir, 'package.json'), JSON.stringify({ name: 'version-fixture', version: '1.2.3' }, null, 2));
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'VersionApp', appId: 'com.example.versionapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor', version: { code: 7, name: '1.2.3' } } };\n`);
     const { stdout, exitCode } = runCli(['version', '--minor', '--dry-run', '--json'], { cwd: tmpDir });
     const plan = JSON.parse(stdout);
-
     expect(exitCode).toBe(0);
     expect(plan.previousVersionName).toBe('1.2.3');
     expect(plan.nextVersionName).toBe('1.3.0');
@@ -379,28 +350,12 @@ describe('Deploid CLI', () => {
 
   it('should update config, package version, and release notes', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-version-apply-'));
-    await fs.writeFile(
-      path.join(tmpDir, 'package.json'),
-      JSON.stringify({ name: 'version-apply', version: '1.2.3' }, null, 2)
-    );
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'VersionApp',
-  appId: 'com.example.versionapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: {
-    packaging: 'capacitor',
-    version: { code: 7, name: '1.2.3' }
-  }
-};\n`
-    );
-
+    await fs.writeFile(path.join(tmpDir, 'package.json'), JSON.stringify({ name: 'version-apply', version: '1.2.3' }, null, 2));
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'VersionApp', appId: 'com.example.versionapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor', version: { code: 7, name: '1.2.3' } } };\n`);
     const { stdout, exitCode } = runCli(['version', '2.0.0', '--code', '10'], { cwd: tmpDir });
     const updatedPackage = JSON.parse(await fs.readFile(path.join(tmpDir, 'package.json'), 'utf8'));
     const updatedConfig = await fs.readFile(path.join(tmpDir, 'deploid.config.mjs'), 'utf8');
     const releaseNotes = await fs.readFile(path.join(tmpDir, 'RELEASE_NOTES.md'), 'utf8');
-
     expect(exitCode).toBe(0);
     expect(stdout).toContain('Updated version to 2.0.0 (10).');
     expect(updatedPackage.version).toBe('2.0.0');
@@ -411,35 +366,11 @@ describe('Deploid CLI', () => {
 
   it('should generate a github actions workflow and secrets guide', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-ci-init-'));
-    await fs.writeFile(
-      path.join(tmpDir, 'pnpm-lock.yaml'),
-      'lockfileVersion: 9.0\n'
-    );
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'CiApp',
-  appId: 'com.example.ciapp',
-  web: { framework: 'vite', buildCommand: 'pnpm run build', webDir: 'dist' },
-  android: {
-    packaging: 'capacitor',
-    signing: {
-      keystorePath: 'secrets/upload.jks',
-      alias: 'ci-app',
-      storePasswordEnv: 'DEPLOID_ANDROID_STORE_PASSWORD',
-      keyPasswordEnv: 'DEPLOID_ANDROID_KEY_PASSWORD'
-    }
-  },
-  publish: {
-    github: { repo: 'acme/ci-app', draft: true }
-  }
-};\n`
-    );
-
+    await fs.writeFile(path.join(tmpDir, 'pnpm-lock.yaml'), 'lockfileVersion: 9.0\n');
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'CiApp', appId: 'com.example.ciapp', web: { framework: 'vite', buildCommand: 'pnpm run build', webDir: 'dist' }, android: { packaging: 'capacitor', signing: { keystorePath: 'secrets/upload.jks', alias: 'ci-app', storePasswordEnv: 'DEPLOID_ANDROID_STORE_PASSWORD', keyPasswordEnv: 'DEPLOID_ANDROID_KEY_PASSWORD' } }, publish: { github: { repo: 'acme/ci-app', draft: true } } };\n`);
     const { stdout, exitCode } = runCli(['ci', 'init', 'github'], { cwd: tmpDir });
     const workflow = await fs.readFile(path.join(tmpDir, '.github', 'workflows', 'deploid-release.yml'), 'utf8');
     const guide = await fs.readFile(path.join(tmpDir, '.github', 'DEPLOID_SECRETS.md'), 'utf8');
-
     expect(exitCode).toBe(0);
     expect(stdout).toContain('Created .github/workflows/deploid-release.yml.');
     expect(workflow).toContain('uses: pnpm/action-setup@v4');
@@ -452,26 +383,8 @@ describe('Deploid CLI', () => {
 
   it('should print a ship workflow plan in dry-run mode', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-ship-plan-'));
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'ShipApp',
-  appId: 'com.example.shipapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: {
-    packaging: 'capacitor',
-    version: { code: 3, name: '1.2.3' }
-  },
-  publish: {
-    github: { repo: 'acme/ship-app', draft: true }
-  }
-};\n`
-    );
-
-    const { stdout, exitCode } = runCli(['ship', '--patch', '--from-git', '--target', 'github', '--dry-run'], {
-      cwd: tmpDir
-    });
-
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'ShipApp', appId: 'com.example.shipapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor', version: { code: 3, name: '1.2.3' } }, publish: { github: { repo: 'acme/ship-app', draft: true } } };\n`);
+    const { stdout, exitCode } = runCli(['ship', '--patch', '--from-git', '--target', 'github', '--dry-run'], { cwd: tmpDir });
     expect(exitCode).toBe(0);
     expect(stdout).toContain('Deploid Ship Plan');
     expect(stdout).toContain('1. Doctor: deploid doctor --summary');
@@ -485,28 +398,10 @@ describe('Deploid CLI', () => {
 
   it('should dry-run changelog generation as json', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-changelog-plan-'));
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'NotesApp',
-  appId: 'com.example.notesapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: { packaging: 'capacitor', version: { code: 10, name: '2.0.0' } }
-};\n`
-    );
-    await fs.writeFile(
-      path.join(tmpDir, 'RELEASE_NOTES.md'),
-      `# NotesApp 2.0.0
-
-## Highlights
-
-- Added release automation
-`
-    );
-
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'NotesApp', appId: 'com.example.notesapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor', version: { code: 10, name: '2.0.0' } } };\n`);
+    await fs.writeFile(path.join(tmpDir, 'RELEASE_NOTES.md'), '# NotesApp 2.0.0\n\n## Highlights\n\n- Added release automation\n');
     const { stdout, exitCode } = runCli(['changelog', '--dry-run', '--json'], { cwd: tmpDir });
     const plan = JSON.parse(stdout);
-
     expect(exitCode).toBe(0);
     expect(plan.version).toBe('2.0.0');
     expect(plan.notesPath).toContain('RELEASE_NOTES.md');
@@ -517,46 +412,12 @@ describe('Deploid CLI', () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-changelog-apply-'));
     const binDir = path.join(tmpDir, 'bin');
     await fs.mkdir(binDir, { recursive: true });
-    await fs.writeFile(
-      path.join(binDir, 'git'),
-      `#!/usr/bin/env bash
-if [ "$1" = "describe" ]; then
-  printf 'v1.9.0\\n'
-  exit 0
-fi
-if [ "$1" = "log" ]; then
-  printf 'Add release automation\\nFix android signing docs\\n'
-  exit 0
-fi
-exit 0
-`
-    );
+    await fs.writeFile(path.join(binDir, 'git'), '#!/usr/bin/env bash\nif [ "$1" = "describe" ]; then printf \'v1.9.0\\n\'; exit 0; fi\nif [ "$1" = "log" ]; then printf \'Add release automation\\nFix android signing docs\\n\'; exit 0; fi\nexit 0\n');
     await fs.chmod(path.join(binDir, 'git'), 0o755);
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'NotesApp',
-  appId: 'com.example.notesapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: { packaging: 'capacitor', version: { code: 10, name: '2.0.0' } }
-};\n`
-    );
-    await fs.writeFile(
-      path.join(tmpDir, 'RELEASE_NOTES.md'),
-      `# NotesApp 2.0.0
-
-## Highlights
-
-- Added release automation
-`
-    );
-
-    const { stdout, exitCode } = runCli(['changelog', '--from-git'], {
-      cwd: tmpDir,
-      env: { PATH: `${binDir}:${process.env.PATH || ''}` }
-    });
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'NotesApp', appId: 'com.example.notesapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor', version: { code: 10, name: '2.0.0' } } };\n`);
+    await fs.writeFile(path.join(tmpDir, 'RELEASE_NOTES.md'), '# NotesApp 2.0.0\n\n## Highlights\n\n- Added release automation\n');
+    const { stdout, exitCode } = runCli(['changelog', '--from-git'], { cwd: tmpDir, env: { PATH: `${binDir}:${process.env.PATH || ''}` } });
     const changelog = await fs.readFile(path.join(tmpDir, 'CHANGELOG.md'), 'utf8');
-
     expect(exitCode).toBe(0);
     expect(stdout).toContain('Updated CHANGELOG.md for 2.0.0.');
     expect(changelog).toContain('## [2.0.0]');
@@ -569,9 +430,7 @@ exit 0
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-devices-json-'));
     const binDir = path.join(tmpDir, 'bin');
     await fs.mkdir(binDir, { recursive: true });
-    await fs.writeFile(
-      path.join(binDir, 'adb'),
-      `#!/usr/bin/env bash
+    await fs.writeFile(path.join(binDir, 'adb'), `#!/usr/bin/env bash
 if [ "$1" = "devices" ]; then
   printf 'List of devices attached\\nemulator-5554\\tdevice\\npixel-usb\\tdevice\\n'
   exit 0
@@ -581,15 +440,9 @@ if [ "$1" = "version" ]; then
   exit 0
 fi
 exit 0
-`
-    );
+`);
     await fs.chmod(path.join(binDir, 'adb'), 0o755);
-
-    const { stdout, exitCode } = runCli(['devices', '--json'], {
-      cwd: tmpDir,
-      env: { PATH: `${binDir}:${process.env.PATH || ''}` }
-    });
-
+    const { stdout, exitCode } = runCli(['devices', '--json'], { cwd: tmpDir, env: { PATH: `${binDir}:${process.env.PATH || ''}` } });
     const payload = JSON.parse(stdout);
     expect(exitCode).toBe(0);
     expect(payload.devices).toHaveLength(2);
@@ -598,23 +451,15 @@ exit 0
 
   it('should deploy to a specific device only', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-deploy-device-'));
-    const binDir = path.join(tmpDir, 'bin');
+    const sdkDir = path.join(tmpDir, 'android-sdk');
+    const adbPath = path.join(sdkDir, 'platform-tools', 'adb');
     const logPath = path.join(tmpDir, 'adb-invocations.log');
-    await fs.mkdir(binDir, { recursive: true });
+    await fs.mkdir(path.dirname(adbPath), { recursive: true });
+    await fs.mkdir(path.join(sdkDir, 'platforms'), { recursive: true });
     await fs.mkdir(path.join(tmpDir, 'android', 'app', 'build', 'outputs', 'apk', 'debug'), { recursive: true });
     await fs.writeFile(path.join(tmpDir, 'android', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk'), 'apk');
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'DeployApp',
-  appId: 'com.example.deployapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: { packaging: 'capacitor' }
-};\n`
-    );
-    await fs.writeFile(
-      path.join(binDir, 'adb'),
-      `#!/usr/bin/env bash
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'DeployApp', appId: 'com.example.deployapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor' } };\n`);
+    await fs.writeFile(adbPath, `#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "${logPath}"
 if [ "$1" = "version" ]; then
   printf 'Android Debug Bridge version 1.0.41\\n'
@@ -636,13 +481,12 @@ if [ "$1" = "-s" ] && [ "$3" = "logcat" ]; then
   exit 0
 fi
 exit 0
-`
-    );
-    await fs.chmod(path.join(binDir, 'adb'), 0o755);
+`);
+    await fs.chmod(adbPath, 0o755);
 
     const { stdout, exitCode } = runCli(['deploy', '--device', 'pixel-usb', '--launch'], {
       cwd: tmpDir,
-      env: { PATH: `${binDir}:${process.env.PATH || ''}` }
+      env: { DEPLOID_ANDROID_SDK: sdkDir }
     });
 
     const invocations = await fs.readFile(logPath, 'utf8');
@@ -656,23 +500,9 @@ exit 0
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-daemon-'));
     await fs.mkdir(path.join(tmpDir, 'dist-electron'), { recursive: true });
     await fs.writeFile(path.join(tmpDir, 'dist-electron', 'app.exe'), 'desktop');
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'DaemonApp',
-  appId: 'com.example.daemonapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: { packaging: 'capacitor' }
-};\n`
-    );
-
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'DaemonApp', appId: 'com.example.daemonapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'capacitor' } };\n`);
     const port = 49650 + Math.floor(Math.random() * 500);
-    const child = spawn('node', [cliEntry, 'daemon', '--port', String(port)], {
-      cwd: tmpDir,
-      stdio: ['ignore', 'pipe', 'pipe'],
-      env: process.env
-    });
-
+    const child = spawn('node', [cliEntry, 'daemon', '--port', String(port)], { cwd: tmpDir, stdio: ['ignore', 'pipe', 'pipe'], env: process.env });
     const ready = await new Promise<boolean>((resolve) => {
       const timeout = setTimeout(() => resolve(false), 5000);
       child.stdout.on('data', (chunk) => {
@@ -686,14 +516,11 @@ exit 0
         resolve(false);
       });
     });
-
     expect(ready).toBe(true);
-
     try {
       const healthResponse = await fetch(`http://127.0.0.1:${port}/health`);
       const health = await healthResponse.json() as { ok: boolean };
       expect(health.ok).toBe(true);
-
       const artifactsResponse = await fetch(`http://127.0.0.1:${port}/artifacts?cwd=${encodeURIComponent(tmpDir)}`);
       const payload = await artifactsResponse.json() as { ok: boolean; artifacts: Array<{ kind: string; exists: boolean }> };
       expect(payload.ok).toBe(true);
@@ -705,20 +532,8 @@ exit 0
 
   it('should reject non-capacitor packaging in 2.0', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-test-'));
-    await fs.writeFile(
-      path.join(tmpDir, 'deploid.config.mjs'),
-      `export default {
-  appName: 'TestApp',
-  appId: 'com.example.testapp',
-  web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' },
-  android: { packaging: 'tauri' }
-};\n`
-    );
-
-    const { stderr, exitCode } = runCli(['package'], {
-      cwd: tmpDir,
-    });
-
+    await fs.writeFile(path.join(tmpDir, 'deploid.config.mjs'), `export default { appName: 'TestApp', appId: 'com.example.testapp', web: { framework: 'vite', buildCommand: 'npm run build', webDir: 'dist' }, android: { packaging: 'tauri' } };\n`);
+    const { stderr, exitCode } = runCli(['package'], { cwd: tmpDir });
     expect(exitCode).not.toBe(0);
     expect(stderr).toContain('not supported in Deploid 2.0');
   });
