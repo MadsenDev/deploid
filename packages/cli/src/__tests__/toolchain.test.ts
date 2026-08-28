@@ -4,6 +4,7 @@ import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
 import {
   buildAndroidToolchainEnvironment,
+  inspectAndroidPreflight,
   parseGradleWrapperVersion,
   parseJavaMajor,
   resolveAndroidToolchain
@@ -165,5 +166,51 @@ describe('Android toolchain resolver', () => {
     expect(pathEntries).toContain(path.join(sdk, 'platform-tools'));
     expect(pathEntries).toContain(path.join(sdk, 'cmdline-tools', 'latest', 'bin'));
     expect(pathEntries).toContain('/usr/bin');
+  });
+
+  it('accepts an SDK discovered from local.properties during package preflight', () => {
+    const cwd = tempProject();
+    const javaHome = path.join(cwd, 'jdk');
+    const sdk = path.join(cwd, 'android-sdk');
+    fakeJava(javaHome, '21.0.6');
+    fakeAndroidSdk(sdk);
+    fs.mkdirSync(path.join(cwd, 'android'), { recursive: true });
+    fs.writeFileSync(path.join(cwd, 'android', 'local.properties'), `sdk.dir=${sdk.replace(/\\/g, '\\\\')}\n`);
+
+    const result = inspectAndroidPreflight({
+      cwd,
+      intent: 'package',
+      overrides: { javaHome },
+      env: { PATH: '' },
+      platform: 'linux',
+      homeDir: path.join(cwd, 'home')
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.toolchain.androidSdk?.source).toBe('local-properties');
+    expect(result.blockers).toEqual([]);
+  });
+
+  it('does not let missing adb block a build preflight', () => {
+    const cwd = tempProject();
+    const javaHome = path.join(cwd, 'jdk');
+    const sdk = path.join(cwd, 'sdk');
+    fakeJava(javaHome, '21.0.6');
+    fs.mkdirSync(path.join(sdk, 'platforms'), { recursive: true });
+    executable(path.join(cwd, 'android', 'gradlew'), '#!/bin/sh\nexit 0\n');
+
+    const result = inspectAndroidPreflight({
+      cwd,
+      intent: 'build',
+      overrides: { javaHome, androidSdk: sdk },
+      env: { PATH: '' },
+      platform: 'linux',
+      homeDir: path.join(cwd, 'home')
+    });
+
+    expect(result.ok).toBe(true);
+    expect(result.state.warnings).toEqual(expect.arrayContaining([
+      expect.objectContaining({ id: 'adb' })
+    ]));
   });
 });
