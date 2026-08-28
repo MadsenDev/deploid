@@ -9,3 +9,4 @@ export * from './devices.js';
 export * from './toolchain.js';
 export * from './toolchain-env.js';
 export * from './doctor-state.js';
+export * from './preflight.js';
