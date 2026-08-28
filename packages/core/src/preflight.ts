@@ -1,4 +1,4 @@
-import { buildDoctorStateFromToolchain, type DoctorCheck, type DoctorState } from './doctor-state.js';
+import { buildDoctorStateFromToolchain, type DoctorState, type DoctorStateCheck } from './doctor-state.js';
 import { resolveAndroidToolchain, type AndroidToolchain } from './toolchain.js';
 
 export type AndroidPreflightIntent = 'package' | 'build' | 'deploy' | 'release';
@@ -7,8 +7,8 @@ export interface AndroidPreflightResult {
   intent: AndroidPreflightIntent;
   toolchain: AndroidToolchain;
   state: DoctorState;
-  blockers: DoctorCheck[];
-  warnings: DoctorCheck[];
+  blockers: DoctorStateCheck[];
+  warnings: DoctorStateCheck[];
   ok: boolean;
 }
 
