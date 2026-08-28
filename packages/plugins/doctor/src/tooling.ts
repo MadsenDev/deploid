@@ -13,6 +13,13 @@ export interface CheckResult {
 }
 
 export interface SharedDoctorState {
+  toolchain?: {
+    java?: { home: string; path: string; source: string; version?: string; major?: number; compatible: boolean; minimumMajor: number };
+    androidSdk?: { root: string; path: string; source: string; version?: string };
+    adb?: { path: string; source: string; version?: string };
+    sdkmanager?: { path: string; source: string; version?: string };
+    gradle?: { path: string; source: string; version?: string; wrapper: boolean };
+  };
   checks: Array<{
     id: string;
     status: 'pass' | 'warning' | 'error';
@@ -27,6 +34,7 @@ export interface SharedDoctorState {
     manageAndroidSdk: boolean;
     fixAndroidProjectSdkPath: boolean;
   };
+  nextActions?: string[];
 }
 
 const TITLES: Record<string, string> = {
