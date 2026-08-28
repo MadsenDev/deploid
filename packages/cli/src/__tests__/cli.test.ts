@@ -598,9 +598,11 @@ exit 0
 
   it('should deploy to a specific device only', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-deploy-device-'));
-    const binDir = path.join(tmpDir, 'bin');
+    const sdkDir = path.join(tmpDir, 'android-sdk');
+    const adbPath = path.join(sdkDir, 'platform-tools', 'adb');
     const logPath = path.join(tmpDir, 'adb-invocations.log');
-    await fs.mkdir(binDir, { recursive: true });
+    await fs.mkdir(path.dirname(adbPath), { recursive: true });
+    await fs.mkdir(path.join(sdkDir, 'platforms'), { recursive: true });
     await fs.mkdir(path.join(tmpDir, 'android', 'app', 'build', 'outputs', 'apk', 'debug'), { recursive: true });
     await fs.writeFile(path.join(tmpDir, 'android', 'app', 'build', 'outputs', 'apk', 'debug', 'app-debug.apk'), 'apk');
     await fs.writeFile(
@@ -613,7 +615,7 @@ exit 0
 };\n`
     );
     await fs.writeFile(
-      path.join(binDir, 'adb'),
+      adbPath,
       `#!/usr/bin/env bash
 printf '%s\\n' "$*" >> "${logPath}"
 if [ "$1" = "version" ]; then
@@ -638,11 +640,11 @@ fi
 exit 0
 `
     );
-    await fs.chmod(path.join(binDir, 'adb'), 0o755);
+    await fs.chmod(adbPath, 0o755);
 
     const { stdout, exitCode } = runCli(['deploy', '--device', 'pixel-usb', '--launch'], {
       cwd: tmpDir,
-      env: { PATH: `${binDir}:${process.env.PATH || ''}` }
+      env: { DEPLOID_ANDROID_SDK: sdkDir }
     });
 
     const invocations = await fs.readFile(logPath, 'utf8');
