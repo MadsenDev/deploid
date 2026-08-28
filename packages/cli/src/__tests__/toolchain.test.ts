@@ -2,7 +2,12 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { afterEach, describe, expect, it } from 'vitest';
-import { parseGradleWrapperVersion, parseJavaMajor, resolveAndroidToolchain } from '@deploid/core';
+import {
+  buildAndroidToolchainEnvironment,
+  parseGradleWrapperVersion,
+  parseJavaMajor,
+  resolveAndroidToolchain
+} from '@deploid/core';
 
 const tempDirs: string[] = [];
 
@@ -133,5 +138,32 @@ describe('Android toolchain resolver', () => {
       wrapper: true,
       version: '8.11.1'
     }));
+  });
+
+  it('projects resolved tools into a process-local environment', () => {
+    const cwd = tempProject();
+    const javaHome = path.join(cwd, 'jdk');
+    const sdk = path.join(cwd, 'sdk');
+    fakeJava(javaHome, '21.0.6');
+    fakeAndroidSdk(sdk);
+
+    const toolchain = resolveAndroidToolchain({
+      cwd,
+      overrides: { javaHome, androidSdk: sdk },
+      env: { PATH: '/usr/bin' },
+      platform: 'linux',
+      homeDir: path.join(cwd, 'home')
+    });
+    const env = buildAndroidToolchainEnvironment(toolchain, { PATH: '/usr/bin', KEEP_ME: 'yes' });
+    const pathEntries = env.PATH?.split(path.delimiter) ?? [];
+
+    expect(env.JAVA_HOME).toBe(path.resolve(javaHome));
+    expect(env.ANDROID_HOME).toBe(path.resolve(sdk));
+    expect(env.ANDROID_SDK_ROOT).toBe(path.resolve(sdk));
+    expect(env.KEEP_ME).toBe('yes');
+    expect(pathEntries[0]).toBe(path.join(javaHome, 'bin'));
+    expect(pathEntries).toContain(path.join(sdk, 'platform-tools'));
+    expect(pathEntries).toContain(path.join(sdk, 'cmdline-tools', 'latest', 'bin'));
+    expect(pathEntries).toContain('/usr/bin');
   });
 });

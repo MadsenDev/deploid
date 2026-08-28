@@ -7,3 +7,4 @@ export * from './app-api.js';
 export * from './artifacts.js';
 export * from './devices.js';
 export * from './toolchain.js';
+export * from './toolchain-env.js';
