@@ -1,33 +1,16 @@
 #!/usr/bin/env node
 import { Command } from 'commander';
-import { createContext, loadConfig, runPipeline, loadPlugin, runPluginCommand, runDoctorCommand } from '#core';
+import { createContext, formatAndroidPreflightFailure, inspectAndroidPreflight, loadConfig, runPipeline, loadPlugin, runPluginCommand, runDoctorCommand } from '#core';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-async function checkAndroidToolchain(): Promise<void> {
-  const { execa } = await import('execa');
-  const problems: string[] = [];
+async function checkAndroidToolchain(intent: 'package' | 'build' = 'build'): Promise<void> {
+  const result = inspectAndroidPreflight({ cwd: process.cwd(), intent });
+  if (result.ok) return;
 
-  try {
-    await execa('java', ['-version'], { stdio: 'pipe' });
-  } catch {
-    problems.push('Java not found. Install JDK 21+: https://adoptium.net/');
-  }
-
-  if (!process.env.ANDROID_HOME && !process.env.ANDROID_SDK_ROOT) {
-    problems.push(
-      'ANDROID_HOME is not set. Install Android Studio or the Android command-line tools,\n' +
-      '  then set: export ANDROID_HOME="$HOME/Android/Sdk"'
-    );
-  }
-
-  if (problems.length > 0) {
-    console.error('❌ Missing Android toolchain requirements:\n');
-    for (const problem of problems) console.error(`  • ${problem}`);
-    console.error('\n  Run `deploid doctor` for a full environment check.');
-    process.exit(1);
-  }
+  console.error('❌ ' + formatAndroidPreflightFailure(result).join('\n'));
+  process.exit(1);
 }
 
 // Get version from package.json
@@ -164,7 +147,7 @@ program
   .description('Wrap app for Android (Capacitor/Tauri/TWA)')
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
-    await checkAndroidToolchain();
+    await checkAndroidToolchain('package');
     const config = await loadConfig();
     if (config.android.packaging !== 'capacitor') {
       throw new Error(`Packaging engine "${config.android.packaging}" is not supported in Deploid 2.0. Use "capacitor".`);
@@ -212,7 +195,7 @@ program
   .description('Build APK/AAB')
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
-    await checkAndroidToolchain();
+    await checkAndroidToolchain('build');
     const config = await loadConfig();
     const cwd = process.cwd();
 
