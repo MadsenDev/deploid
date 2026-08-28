@@ -58,13 +58,23 @@ export async function runPluginCommand(pluginName: string, options: CommandRunOp
 export async function runDoctorCommand(options: DoctorRunOptions = {}): Promise<PipelineContext> {
   const cwd = options.cwd || process.cwd();
   const config = options.config || await loadConfigOptional(cwd);
+  const doctorOptions = options.doctorOptions || {};
+
+  if (doctorOptions.projectOnly) {
+    return runPluginCommand('doctor', {
+      cwd,
+      config,
+      debug: options.debug,
+      contextExtras: { doctorOptions }
+    });
+  }
 
   return withResolvedAndroidToolchainEnvironment(cwd, (toolchain) => runPluginCommand('doctor', {
     cwd,
     config,
     debug: options.debug,
     contextExtras: {
-      doctorOptions: options.doctorOptions || {},
+      doctorOptions,
       androidToolchain: toolchain,
       doctorState: buildDoctorStateFromToolchain(toolchain)
     }
