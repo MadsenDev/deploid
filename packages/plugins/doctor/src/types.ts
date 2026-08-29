@@ -1,6 +1,6 @@
 export type CheckStatus = 'pass' | 'warn' | 'fail';
 export type CheckCategory = 'project' | 'workflows' | 'tooling' | 'plugins' | 'release';
-export type WorkflowId = 'init' | 'build' | 'release' | 'deploy' | 'desktop';
+export type WorkflowId = 'init' | 'build' | 'release' | 'deploy';
 export type FixStatus = 'applied' | 'skipped' | 'failed';
 
 export interface CheckResult {
