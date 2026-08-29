@@ -10,6 +10,7 @@ interface DeployOptions {
   bootEmulator?: string;
   logs?: boolean;
   logFilter?: string;
+  requireSingleDevice?: boolean;
 }
 
 interface PipelineContext {
@@ -45,12 +46,10 @@ const runDeployAndroid: PipelineStep = async ({ logger, config, cwd, deployOptio
 
   const devices = await listConnectedDevices(adbPath, logger);
   if (devices.length === 0) {
-    logger.warn('No Android devices connected.');
-    logger.info('Connect a USB-debugging device or boot an emulator, then retry.');
-    return;
+    throw new Error('No Android devices are connected. Connect a USB-debugging device or boot an emulator, then retry.');
   }
 
-  const targets = resolveTargetDevices(devices, deployOptions?.device);
+  const targets = resolveTargetDevices(devices, deployOptions?.device, Boolean(deployOptions?.requireSingleDevice));
   for (const device of targets) {
     await deployToDevice(adbPath, device, apkPath, config, logger, deployOptions);
   }
@@ -95,12 +94,18 @@ async function listConnectedDevices(adbPath: string, logger?: any): Promise<stri
   return devices;
 }
 
-function resolveTargetDevices(devices: string[], requestedDevice?: string): string[] {
-  if (!requestedDevice) return devices;
-  if (!devices.includes(requestedDevice)) {
-    throw new Error(`Requested device "${requestedDevice}" is not connected. Available devices: ${devices.join(', ')}`);
+function resolveTargetDevices(devices: string[], requestedDevice?: string, requireSingleDevice = false): string[] {
+  if (requestedDevice) {
+    if (!devices.includes(requestedDevice)) {
+      throw new Error(`Requested device "${requestedDevice}" is not connected. Available devices: ${devices.join(', ')}`);
+    }
+    return [requestedDevice];
   }
-  return [requestedDevice];
+
+  if (!requireSingleDevice) return devices;
+  if (devices.length === 1) return devices;
+
+  throw new Error(`Multiple Android devices are connected: ${devices.join(', ')}. Choose one with --device <id>.`);
 }
 
 async function bootEmulator(avdName: string, adbPath: string, logger: any): Promise<void> {
