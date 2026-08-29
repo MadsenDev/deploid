@@ -1,3 +1,4 @@
+import { ANDROID_MINIMUM_JAVA_MAJOR } from './android-requirements.js';
 import { buildDoctorStateFromToolchain, type DoctorState, type DoctorStateCheck } from './doctor-state.js';
 import {
   resolveAndroidToolchain,
@@ -31,7 +32,7 @@ export function inspectAndroidPreflight(options: InspectAndroidPreflightOptions 
   const intent = options.intent ?? 'build';
   const toolchain = resolveAndroidToolchain({
     ...options,
-    minimumJavaMajor: options.minimumJavaMajor ?? 17
+    minimumJavaMajor: options.minimumJavaMajor ?? ANDROID_MINIMUM_JAVA_MAJOR
   });
   const state = buildDoctorStateFromToolchain(toolchain);
   const required = REQUIRED_CHECKS[intent];
