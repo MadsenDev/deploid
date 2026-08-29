@@ -37,3 +37,30 @@ jobs:
 
       - name: Test
         run: pnpm -r --if-present test
+
+  windows-toolchain:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.12.0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build core and CLI
+        run: pnpm --filter @deploid/core --filter @deploid/cli... build
+
+      - name: Test Windows toolchain resolution
+        run: pnpm --filter @deploid/cli exec vitest run src/__tests__/windows-toolchain.test.ts
