@@ -1,7 +1,7 @@
 import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
-import type { CheckResult, DeploidConfigShape, ProjectState } from './types.js';
+import type { CheckResult, DeploidConfigShape, ProjectState, WorkflowId } from './types.js';
 import { fail, pass, warn } from './types.js';
 
 const CONFIG_CANDIDATES = ['deploid.config.ts', 'deploid.config.js', 'deploid.config.mjs', 'deploid.config.cjs'];
@@ -46,7 +46,7 @@ export function collectProjectChecks(state: ProjectState): CheckResult[] {
       warn('capacitor-config', 'Capacitor config', 'Skipped because no Deploid config was loaded.', ['build']),
       warn('android-project', 'Android project', 'Skipped because no Deploid config was loaded.', ['build', 'deploy']),
       warn('versioning', 'Version metadata', 'Skipped because no Deploid config was loaded.', ['release']),
-      warn('plugin-state', 'Plugin surface', 'Skipped because no Deploid config was loaded.', ['init', 'desktop'])
+      warn('plugin-state', 'Plugin surface', 'Skipped because no Deploid config was loaded.', ['init'])
     );
     return checks;
   }
@@ -68,7 +68,7 @@ export function collectProjectChecks(state: ProjectState): CheckResult[] {
 
 export function collectRuntimeChecks(): CheckResult[] {
   return [
-    checkCommand('node', ['--version'], 'Node.js', 'Required to run Deploid.', ['init', 'build', 'release', 'deploy', 'desktop']),
+    checkCommand('node', ['--version'], 'Node.js', 'Required to run Deploid.', ['init', 'build', 'release', 'deploy']),
     checkNpm(),
     checkCommand('npx', ['--version'], 'npx', 'Used to invoke Capacitor CLI commands.', ['build', 'release'])
   ];
@@ -118,12 +118,6 @@ function collectPluginChecks(state: ProjectState): CheckResult[] {
       ? pass('capacitor-dependency', 'Capacitor packages', 'Capacitor dependencies are present.', ['build', 'deploy'])
       : warn('capacitor-dependency', 'Capacitor packages', 'Capacitor dependencies are incomplete in package.json.', ['build', 'deploy'], 'Install @capacitor/core and @capacitor/cli in the app project.'));
   }
-  const hasDesktop = fs.existsSync(path.join(state.cwd, 'electron')) || ['electron:build', 'electron:build:win', 'electron:build:mac'].some((key) => typeof state.packageScripts[key] === 'string');
-  checks.push(hasDesktop
-    ? (typeof deps.electron === 'string' && typeof deps['electron-builder'] === 'string'
-      ? pass('electron-dependency', 'Electron packages', 'Electron dependencies are present.', ['desktop'])
-      : warn('electron-dependency', 'Electron packages', 'Desktop packaging files exist but Electron dependencies are incomplete.', ['desktop']))
-    : warn('electron-dependency', 'Electron packages', 'Desktop packaging is not configured.', ['desktop']));
   return checks;
 }
 
@@ -180,16 +174,16 @@ function checkVersioning(state: ProjectState): CheckResult {
   return pass('versioning', 'Version metadata', `Configured version ${version.name} (${version.code}).`, ['release']);
 }
 
-function checkCommand(command: string, args: string[], title: string, details: string, workflows: any[]): CheckResult {
+function checkCommand(command: string, args: string[], title: string, details: string, workflows: WorkflowId[]): CheckResult {
   const run = spawnSync(command, args, { encoding: 'utf8' });
   const output = `${run.stdout || ''} ${run.stderr || ''}`.trim().split('\n')[0]?.trim();
   return run.status === 0 ? pass(command, title, `${command} is available.`, workflows, output || details) : fail(command, title, `${command} is not available.`, workflows, run.error?.message || output || details);
 }
 
 function checkNpm(): CheckResult {
-  const check = checkCommand('npm', ['--version'], 'npm', 'Used by init, plugin setup, and Capacitor workflows.', ['init', 'build', 'release', 'desktop']);
+  const check = checkCommand('npm', ['--version'], 'npm', 'Used by init, plugin setup, and Capacitor workflows.', ['init', 'build', 'release']);
   const major = Number.parseInt((check.details || '').split('.')[0] || '0', 10);
-  return check.status === 'pass' && major > 0 && major < 9 ? warn('npm', 'npm', `npm ${check.details} is available but older than recommended.`, ['init', 'build', 'release', 'desktop']) : check;
+  return check.status === 'pass' && major > 0 && major < 9 ? warn('npm', 'npm', `npm ${check.details} is available but older than recommended.`, ['init', 'build', 'release']) : check;
 }
 
 export function safeRead(filePath: string): string {
