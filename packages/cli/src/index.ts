@@ -49,17 +49,11 @@ program
   .option('--verbose', 'Include passing checks and extra details')
   .option('--project-only', 'Skip environment/toolchain checks and inspect project files only')
   .option('--fix', 'Apply safe automatic fixes before re-running checks')
-  .option('--java-home <path>', 'Use this JDK for this command only')
-  .option('--android-sdk <path>', 'Use this Android SDK for this command only')
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
     await runDoctorCommand({
       cwd: process.cwd(),
       debug: options.debug,
-      toolchainOverrides: {
-        javaHome: options.javaHome,
-        androidSdk: options.androidSdk
-      },
       doctorOptions: {
       json: Boolean(options.json),
       markdown: Boolean(options.markdown),
@@ -244,58 +238,251 @@ program
   .option('--no-build', 'Skip Android build')
   .option('--no-changelog', 'Skip changelog generation')
   .option('--no-publish', 'Skip artifact publishing')
+  .option('--dry-run', 'Print the workflow plan without executing commands')
   .option('--debug', 'Enable debug logging')
   .action(async (version, options) => {
+    await runShipWorkflow(version, options);
+  });
+
+program
+  .command('debug')
+  .description('Add network debugging tools to your project')
+  .action(async () => {
     const config = await loadConfig();
-    const cwd = process.cwd();
-    const ctx = createContext(cwd, config, options.debug);
-    const steps = [];
-
-    if (options.doctor) steps.push(await loadPlugin('doctor', config));
-    if (options.assets) steps.push(await loadPlugin('assets', config));
-    if (options.package) steps.push(await loadPlugin(`packaging-${config.android.packaging}`, config));
-    if (options.build) steps.push(await loadPlugin('build-android', config));
-    if (options.changelog) steps.push(await loadPlugin('changelog', config));
-    if (options.publish) steps.push(await loadPlugin('publish', config));
-
-    Object.assign(ctx as Record<string, unknown>, {
-      versionOptions: {
-        version,
-        major: Boolean(options.major),
-        minor: Boolean(options.minor),
-        patch: Boolean(options.patch),
-        code: options.code,
-        notesFile: options.notesFile
-      },
-      changelogOptions: {
-        version,
-        notesFile: options.notesFile,
-        changelogFile: options.changelogFile,
-        fromGit: Boolean(options.fromGit)
-      },
-      publishOptions: {
-        target: options.target,
-        artifact: options.artifact,
-        releaseName: options.releaseName,
-        tag: options.tag,
-        draft: Boolean(options.draft),
-        latest: Boolean(options.latest)
-      }
+    await runPluginCommand('debug-network', {
+      cwd: process.cwd(),
+      config
     });
-
-    await runPipeline(ctx, steps);
   });
 
 registerAndroidCommands(program);
 
-async function runArtifactsCommand(action: 'list' | 'inspect' | 'clean', options: Record<string, unknown>): Promise<void> {
+program
+  .command('ios')
+  .description('Prepare iOS project for Mac handoff')
+  .option('--debug', 'Enable debug logging')
+  .action(async (options) => {
+    const config = await loadConfig();
+    await runPluginCommand('prepare-ios', {
+      cwd: process.cwd(),
+      config,
+      debug: options.debug
+    });
+  });
+
+program
+  .command('ios:assets')
+  .description('Generate iOS app icons and launch screens')
+  .option('--debug', 'Enable debug logging')
+  .action(async () => {
+    throw new Error('`deploid ios:assets` is not implemented in Deploid 2.0 yet.');
+  });
+
+program
+  .command('ios:handbook')
+  .description('Generate iOS handoff documentation')
+  .option('--debug', 'Enable debug logging')
+  .action(async (options) => {
+    const config = await loadConfig();
+    await runPluginCommand('prepare-ios', {
+      cwd: process.cwd(),
+      config,
+      debug: options.debug
+    });
+  });
+
+program
+  .command('firebase')
+  .description('Setup Firebase for push notifications')
+  .option('--project-id <id>', 'Firebase project ID')
+  .option('--auto-create', 'Auto-create Firebase project')
+  .option('--debug', 'Enable debug logging')
+  .action(async (options) => {
+    const { setupFirebase } = await import('./firebase.js');
+    await setupFirebase(options);
+  });
+
+const plugin = program
+  .command('plugin')
+  .description('Manage Deploid plugins');
+
+plugin
+  .option('--list', 'List available plugins')
+  .option('--install <plugin>', 'Install a specific plugin')
+  .option('--remove <plugin>', 'Remove a plugin')
+  .option('--debug', 'Enable debug logging')
+  .action(async (options) => {
+    const { managePlugins } = await import('./plugin-manager.js');
+    await managePlugins(options);
+  });
+
+plugin
+  .command('init')
+  .description('Scaffold a new Deploid plugin package')
+  .argument('<name>', 'Plugin key or package suffix')
+  .option('--dir <path>', 'Target directory for the plugin scaffold')
+  .option('--force', 'Overwrite an existing target directory')
+  .action(async (name, options) => {
+    const { initPluginScaffold } = await import('./plugin-tools.js');
+    await initPluginScaffold(name, options);
+  });
+
+plugin
+  .command('validate')
+  .description('Validate a Deploid plugin package scaffold')
+  .argument('[path]', 'Plugin directory to validate', '.')
+  .option('--json', 'Emit machine-readable validation output')
+  .action(async (targetPath, options) => {
+    const { validatePluginScaffold } = await import('./plugin-tools.js');
+    await validatePluginScaffold(targetPath, options);
+  });
+
+const release = program
+  .command('release')
+  .description('Release workflow helpers');
+
+release
+  .command('init')
+  .description('Scaffold signing, versioning, and publish config for release workflows')
+  .option('-y, --yes', 'Apply recommended defaults without prompts')
+  .option('--keystore-path <path>', 'Path to the Android release keystore', 'secrets/android-upload-keystore.jks')
+  .option('--alias <name>', 'Android keystore alias')
+  .option('--store-password-env <name>', 'Env var name for the keystore password', 'DEPLOID_ANDROID_STORE_PASSWORD')
+  .option('--key-password-env <name>', 'Env var name for the key password', 'DEPLOID_ANDROID_KEY_PASSWORD')
+  .option('--github-repo <owner/repo>', 'GitHub repository for release publishing')
+  .option('--play-track <track>', 'Play Console track (internal|alpha|beta|production)', 'internal')
+  .option('--play-service-account <path>', 'Path to the Play service account json', 'secrets/play-service-account.json')
+  .option('--build-type <type>', 'Release artifact preference (apk|aab|both)', 'aab')
+  .option('--debug', 'Enable debug logging')
+  .action(async (options) => {
+    const config = await loadConfig();
+    await runPluginCommand('release-init', {
+      cwd: process.cwd(),
+      config,
+      debug: options.debug,
+      contextExtras: {
+        releaseInitOptions: {
+          yes: Boolean(options.yes),
+          keystorePath: options.keystorePath,
+          alias: options.alias,
+          storePasswordEnv: options.storePasswordEnv,
+          keyPasswordEnv: options.keyPasswordEnv,
+          githubRepo: options.githubRepo,
+          playTrack: options.playTrack,
+          playServiceAccount: options.playServiceAccount,
+          buildType: options.buildType
+        }
+      }
+    });
+  });
+
+const ci = program
+  .command('ci')
+  .description('CI/CD workflow generators');
+
+ci
+  .command('init')
+  .description('Generate CI workflow scaffolding')
+  .argument('<provider>', 'CI provider (github)')
+  .option('--workflow-name <name>', 'GitHub Actions workflow name', 'Deploid Release')
+  .option('--node-version <version>', 'Node.js version for CI', '20')
+  .option('--java-version <version>', 'Java version for CI', '21')
+  .option('--package-manager <name>', 'Package manager override (auto|npm|pnpm|yarn|bun)', 'auto')
+  .option('--no-include-version', 'Do not run `deploid version --patch` in CI')
+  .option('--force', 'Overwrite existing generated CI files')
+  .option('--debug', 'Enable debug logging')
+  .action(async (provider, options) => {
+    const config = await loadConfig();
+    await runPluginCommand('ci-init', {
+      cwd: process.cwd(),
+      config,
+      debug: options.debug,
+      contextExtras: {
+        ciInitOptions: {
+          provider,
+          workflowName: options.workflowName,
+          nodeVersion: options.nodeVersion,
+          javaVersion: options.javaVersion,
+          packageManager: options.packageManager,
+          includeVersion: options.includeVersion,
+          force: Boolean(options.force)
+        }
+      }
+    });
+  });
+
+program
+  .command('publish')
+  .description('Upload to Play Store or GitHub')
+  .option('--target <target>', 'Publish target (github|play|all)', 'all')
+  .option('--artifact <path>', 'Artifact path override (APK or AAB)')
+  .option('--notes <text>', 'Inline release notes')
+  .option('--notes-file <path>', 'Path to release notes markdown/text file')
+  .option('--tag <tag>', 'Git tag to publish or create on GitHub')
+  .option('--release-name <name>', 'GitHub release title override')
+  .option('--draft', 'Create or keep the GitHub release as draft')
+  .option('--latest', 'Mark the GitHub release as latest')
+  .option('--dry-run', 'Print the resolved publish plan without calling external APIs')
+  .option('--debug', 'Enable debug logging')
+  .action(async (options) => {
+    const config = await loadConfig();
+    await runPluginCommand('publish', {
+      cwd: process.cwd(),
+      config,
+      debug: options.debug,
+      contextExtras: {
+        publishOptions: {
+          target: options.target,
+          artifact: options.artifact,
+          notes: options.notes,
+          notesFile: options.notesFile,
+          tag: options.tag,
+          releaseName: options.releaseName,
+          draft: options.draft ? true : undefined,
+          latest: options.latest ? true : undefined,
+          dryRun: Boolean(options.dryRun)
+        }
+      }
+    });
+  });
+
+interface ShipOptions {
+  major?: boolean;
+  minor?: boolean;
+  patch?: boolean;
+  code?: number;
+  notesFile?: string;
+  changelogFile?: string;
+  fromGit?: boolean;
+  target?: string;
+  artifact?: string;
+  releaseName?: string;
+  tag?: string;
+  draft?: boolean;
+  latest?: boolean;
+  doctor?: boolean;
+  assets?: boolean;
+  package?: boolean;
+  build?: boolean;
+  changelog?: boolean;
+  publish?: boolean;
+  dryRun?: boolean;
+  debug?: boolean;
+}
+
+async function runArtifactsCommand(action: 'list' | 'inspect' | 'clean', options: {
+  kind?: string;
+  json?: boolean;
+  dryRun?: boolean;
+  debug?: boolean;
+}): Promise<void> {
   const config = await loadConfig();
   await runPluginCommand('artifacts', {
     cwd: process.cwd(),
     config,
-    debug: Boolean(options.debug),
+    debug: options.debug,
     contextExtras: {
-      artifactsOptions: {
+      artifactOptions: {
         action,
         kind: options.kind,
         json: Boolean(options.json),
@@ -305,7 +492,164 @@ async function runArtifactsCommand(action: 'list' | 'inspect' | 'clean', options
   });
 }
 
-program.parseAsync(process.argv).catch((error) => {
-  console.error(error instanceof Error ? error.message : error);
-  process.exitCode = 1;
-});
+async function runShipWorkflow(version: string | undefined, options: ShipOptions): Promise<void> {
+  const cwd = process.cwd();
+  const config = await loadConfig();
+  const workflow: Array<{ label: string; command: string; run: () => Promise<void> }> = [];
+  let currentConfig = config;
+
+  if (options.doctor !== false) {
+    workflow.push({
+      label: 'Doctor',
+      command: 'deploid doctor --summary',
+      run: async () => {
+        process.exitCode = 0;
+        await runDoctorCommand({
+          cwd,
+          debug: options.debug,
+          doctorOptions: { summary: true }
+        });
+        if (process.exitCode && process.exitCode !== 0) {
+          process.exitCode = 1;
+          throw new Error('Doctor found release blockers. Fix them or rerun with --no-doctor to skip.');
+        }
+        process.exitCode = 0;
+      }
+    });
+  }
+
+  if (options.assets !== false) {
+    workflow.push({
+      label: 'Assets',
+      command: 'deploid assets',
+      run: async () => {
+        await runPluginCommand('assets', {
+          cwd,
+          config: currentConfig,
+          debug: options.debug
+        });
+      }
+    });
+  }
+
+  if (options.package !== false) {
+    workflow.push({
+      label: 'Package',
+      command: `deploid package`,
+      run: async () => {
+        await runPluginCommand(`packaging-${currentConfig.android.packaging}`, {
+          cwd,
+          config: currentConfig,
+          debug: options.debug
+        });
+      }
+    });
+  }
+
+  const shouldVersion = Boolean(version || options.major || options.minor || options.patch || typeof options.code === 'number');
+  if (shouldVersion) {
+    workflow.push({
+      label: 'Version',
+      command: `deploid version ${version || [options.major && '--major', options.minor && '--minor', options.patch && '--patch'].filter(Boolean).join(' ')}`.trim(),
+      run: async () => {
+        await runPluginCommand('version', {
+          cwd,
+          config: currentConfig,
+          debug: options.debug,
+          contextExtras: {
+            versionOptions: {
+              version,
+              major: Boolean(options.major),
+              minor: Boolean(options.minor),
+              patch: Boolean(options.patch),
+              code: options.code,
+              notesFile: options.notesFile,
+              dryRun: false,
+              json: false
+            }
+          }
+        });
+        currentConfig = await loadConfig(cwd);
+      }
+    });
+  }
+
+  if (options.build !== false) {
+    workflow.push({
+      label: 'Build',
+      command: 'deploid build',
+      run: async () => {
+        await runPluginCommand('build-android', {
+          cwd,
+          config: currentConfig,
+          debug: options.debug
+        });
+      }
+    });
+  }
+
+  if (options.changelog !== false) {
+    workflow.push({
+      label: 'Changelog',
+      command: `deploid changelog${options.fromGit ? ' --from-git' : ''}`,
+      run: async () => {
+        await runPluginCommand('changelog', {
+          cwd,
+          config: currentConfig,
+          debug: options.debug,
+          contextExtras: {
+            changelogOptions: {
+              version,
+              notesFile: options.notesFile,
+              changelogFile: options.changelogFile,
+              fromGit: Boolean(options.fromGit),
+              dryRun: false,
+              json: false
+            }
+          }
+        });
+      }
+    });
+  }
+
+  if (options.publish !== false) {
+    workflow.push({
+      label: 'Publish',
+      command: `deploid publish --target ${options.target || 'all'}`,
+      run: async () => {
+        await runPluginCommand('publish', {
+          cwd,
+          config: currentConfig,
+          debug: options.debug,
+          contextExtras: {
+            publishOptions: {
+              target: options.target || 'all',
+              artifact: options.artifact,
+              notesFile: options.notesFile,
+              releaseName: options.releaseName,
+              tag: options.tag,
+              draft: options.draft ? true : undefined,
+              latest: options.latest ? true : undefined,
+              dryRun: false
+            }
+          }
+        });
+      }
+    });
+  }
+
+  if (options.dryRun) {
+    console.log('Deploid Ship Plan');
+    for (const [index, step] of workflow.entries()) {
+      console.log(`${index + 1}. ${step.label}: ${step.command}`);
+    }
+    return;
+  }
+
+  for (const step of workflow) {
+    console.log(`\n==> ${step.label}`);
+    await step.run();
+  }
+}
+
+await program.parseAsync();
