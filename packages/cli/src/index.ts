@@ -13,6 +13,15 @@ async function checkAndroidToolchain(intent: 'package' | 'build' = 'build'): Pro
   process.exit(1);
 }
 
+function resolveAdbPath(): string {
+  const result = inspectAndroidPreflight({ cwd: process.cwd(), intent: 'deploy' });
+  if (!result.ok || !result.toolchain.adb) {
+    console.error('❌ ' + formatAndroidPreflightFailure(result).join('\n'));
+    process.exit(1);
+  }
+  return result.toolchain.adb.path;
+}
+
 // Get version from package.json
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -153,7 +162,6 @@ program
       throw new Error(`Packaging engine "${config.android.packaging}" is not supported in Deploid 2.0. Use "capacitor".`);
     }
 
-    // Auto-run assets generation if assets-gen/ is missing or empty
     const { existsSync, readdirSync } = await import('node:fs');
     const { join } = await import('node:path');
     const cwd = process.cwd();
@@ -199,7 +207,6 @@ program
     const config = await loadConfig();
     const cwd = process.cwd();
 
-    // Warn if web assets haven't been synced into the Android project yet
     const { existsSync, readdirSync } = await import('node:fs');
     const { join } = await import('node:path');
     const syncedWebDir = join(cwd, 'android', 'app', 'src', 'main', 'assets', 'public');
@@ -357,12 +364,16 @@ program
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
     const { execa } = await import('execa');
+    const adbPath = resolveAdbPath();
+    const preflight = inspectAndroidPreflight({ cwd: process.cwd(), intent: 'deploy' });
     try {
       if (options.boot) {
-        execa('emulator', ['-avd', options.boot], { detached: true, stdio: 'ignore' }).catch(() => undefined);
+        const sdkRoot = preflight.toolchain.androidSdk?.root;
+        const emulatorPath = sdkRoot ? join(sdkRoot, 'emulator', process.platform === 'win32' ? 'emulator.exe' : 'emulator') : 'emulator';
+        execa(emulatorPath, ['-avd', options.boot], { detached: true, stdio: 'ignore' }).catch(() => undefined);
       }
 
-      const { stdout } = await execa('adb', ['devices'], { stdio: 'pipe' });
+      const { stdout } = await execa(adbPath, ['devices'], { stdio: 'pipe' });
       if (options.json) {
         const devices = stdout
           .split('\n')
@@ -377,9 +388,8 @@ program
       }
       console.log(stdout);
     } catch (error) {
-      console.error('❌ ADB not found. Please install Android SDK Platform Tools.');
-      console.error('  Download: https://developer.android.com/tools/releases/platform-tools');
-      console.error('  Then add the tools directory to your PATH and set ANDROID_HOME.');
+      console.error(`❌ Failed to list Android devices using ${adbPath}.`);
+      process.exitCode = 1;
     }
   });
 
@@ -394,16 +404,18 @@ program
     const { loadConfigOptional } = await import('@deploid/core');
     const config = await loadConfigOptional(process.cwd());
     const { execa } = await import('execa');
+    const adbPath = resolveAdbPath();
     try {
       const prefix = options.device ? ['-s', options.device] : [];
       const filter = options.filter || (options.appOnly ? config.appId : '');
-      await execa('adb', [...prefix, 'logcat', '-c']);
+      await execa(adbPath, [...prefix, 'logcat', '-c']);
       console.log(filter
         ? `Showing device logs with filter "${filter}"...`
         : `Showing all device logs (use --filter <tag> or --app-only to narrow output)...`);
-      await execa('adb', [...prefix, 'logcat', ...(filter ? [`${filter}:V`, '*:S'] : [])], { stdio: 'inherit' });
+      await execa(adbPath, [...prefix, 'logcat', ...(filter ? [`${filter}:V`, '*:S'] : [])], { stdio: 'inherit' });
     } catch (error) {
-      console.error('❌ Failed to view logs. Make sure a device is connected and adb is in PATH.');
+      console.error(`❌ Failed to view logs using ${adbPath}. Make sure a device is connected.`);
+      process.exitCode = 1;
     }
   });
 
@@ -448,7 +460,7 @@ program
   .command('ios:assets')
   .description('Generate iOS app icons and launch screens')
   .option('--debug', 'Enable debug logging')
-  .action(async (options) => {
+  .action(async () => {
     throw new Error('`deploid ios:assets` is not implemented in Deploid 2.0 yet.');
   });
 
