@@ -143,11 +143,7 @@ function ensureObjectProperty(source: string, parentPath: string[], propertyName
   if (new RegExp(`(^|\\n)\\s*${escapeRegExp(propertyName)}\\s*:`, 'm').test(body)) return source;
   const indent = `${lineIndentAt(source, range.open)}  `;
   const insertion = `\n${indent}${propertyName}: {},`;
-  return `${source.slice(0, range.close)}${insertion}\n${lineIndentAt(source, range.open)}${currentSlice(source, range.close)}`;
-}
-
-function currentSlice(source: string, index: number): string {
-  return source.slice(index);
+  return `${source.slice(0, range.close)}${insertion}\n${lineIndentAt(source, range.open)}${source.slice(range.close)}`;
 }
 
 function findObjectRange(source: string, pathSegments: string[]): { open: number; close: number } | null {
