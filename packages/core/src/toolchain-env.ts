@@ -1,6 +1,6 @@
 import path from 'node:path';
 import { ANDROID_MINIMUM_JAVA_MAJOR } from './android-requirements.js';
-import { resolveAndroidToolchain, type AndroidToolchain } from './toolchain.js';
+import { resolveAndroidToolchain, type AndroidToolchain, type ToolchainOverrides } from './toolchain.js';
 
 const TOOLCHAIN_ENV_KEYS = ['JAVA_HOME', 'ANDROID_HOME', 'ANDROID_SDK_ROOT', 'PATH'] as const;
 type ToolchainEnvKey = (typeof TOOLCHAIN_ENV_KEYS)[number];
@@ -38,17 +38,19 @@ export function buildAndroidToolchainEnvironment(
 
 export function resolveAndroidToolchainEnvironment(
   cwd: string,
-  baseEnv: NodeJS.ProcessEnv = process.env
+  baseEnv: NodeJS.ProcessEnv = process.env,
+  overrides?: ToolchainOverrides
 ): ResolvedToolchainEnvironment {
-  const toolchain = resolveAndroidToolchain({ cwd, env: baseEnv, minimumJavaMajor: ANDROID_MINIMUM_JAVA_MAJOR });
+  const toolchain = resolveAndroidToolchain({ cwd, env: baseEnv, overrides, minimumJavaMajor: ANDROID_MINIMUM_JAVA_MAJOR });
   return { toolchain, env: buildAndroidToolchainEnvironment(toolchain, baseEnv) };
 }
 
 export async function withResolvedAndroidToolchainEnvironment<T>(
   cwd: string,
-  run: (toolchain: AndroidToolchain) => Promise<T>
+  run: (toolchain: AndroidToolchain) => Promise<T>,
+  overrides?: ToolchainOverrides
 ): Promise<T> {
-  const { toolchain, env } = resolveAndroidToolchainEnvironment(cwd, process.env);
+  const { toolchain, env } = resolveAndroidToolchainEnvironment(cwd, process.env, overrides);
   const previous = new Map<ToolchainEnvKey, string | undefined>(
     TOOLCHAIN_ENV_KEYS.map((key) => [key, process.env[key]])
   );
