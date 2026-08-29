@@ -1,4 +1,5 @@
 import path from 'node:path';
+import { ANDROID_MINIMUM_JAVA_MAJOR } from './android-requirements.js';
 import { resolveAndroidToolchain, type AndroidToolchain } from './toolchain.js';
 
 const TOOLCHAIN_ENV_KEYS = ['JAVA_HOME', 'ANDROID_HOME', 'ANDROID_SDK_ROOT', 'PATH'] as const;
@@ -39,7 +40,7 @@ export function resolveAndroidToolchainEnvironment(
   cwd: string,
   baseEnv: NodeJS.ProcessEnv = process.env
 ): ResolvedToolchainEnvironment {
-  const toolchain = resolveAndroidToolchain({ cwd, env: baseEnv, minimumJavaMajor: 17 });
+  const toolchain = resolveAndroidToolchain({ cwd, env: baseEnv, minimumJavaMajor: ANDROID_MINIMUM_JAVA_MAJOR });
   return { toolchain, env: buildAndroidToolchainEnvironment(toolchain, baseEnv) };
 }
 
