@@ -567,10 +567,12 @@ exit 0
 
   it('should list devices as json', async () => {
     const tmpDir = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-devices-json-'));
-    const binDir = path.join(tmpDir, 'bin');
-    await fs.mkdir(binDir, { recursive: true });
+    const sdkDir = path.join(tmpDir, 'android-sdk');
+    const adbPath = path.join(sdkDir, 'platform-tools', 'adb');
+    await fs.mkdir(path.dirname(adbPath), { recursive: true });
+    await fs.mkdir(path.join(sdkDir, 'platforms'), { recursive: true });
     await fs.writeFile(
-      path.join(binDir, 'adb'),
+      adbPath,
       `#!/usr/bin/env bash
 if [ "$1" = "devices" ]; then
   printf 'List of devices attached\\nemulator-5554\\tdevice\\npixel-usb\\tdevice\\n'
@@ -583,11 +585,11 @@ fi
 exit 0
 `
     );
-    await fs.chmod(path.join(binDir, 'adb'), 0o755);
+    await fs.chmod(adbPath, 0o755);
 
     const { stdout, exitCode } = runCli(['devices', '--json'], {
       cwd: tmpDir,
-      env: { PATH: `${binDir}:${process.env.PATH || ''}` }
+      env: { DEPLOID_ANDROID_SDK: sdkDir }
     });
 
     const payload = JSON.parse(stdout);
