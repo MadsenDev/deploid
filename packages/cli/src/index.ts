@@ -49,11 +49,17 @@ program
   .option('--verbose', 'Include passing checks and extra details')
   .option('--project-only', 'Skip environment/toolchain checks and inspect project files only')
   .option('--fix', 'Apply safe automatic fixes before re-running checks')
+  .option('--java-home <path>', 'Use this JDK for this command only')
+  .option('--android-sdk <path>', 'Use this Android SDK for this command only')
   .option('--debug', 'Enable debug logging')
   .action(async (options) => {
     await runDoctorCommand({
       cwd: process.cwd(),
       debug: options.debug,
+      toolchainOverrides: {
+        javaHome: options.javaHome,
+        androidSdk: options.androidSdk
+      },
       doctorOptions: {
       json: Boolean(options.json),
       markdown: Boolean(options.markdown),
