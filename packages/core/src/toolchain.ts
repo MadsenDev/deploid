@@ -2,6 +2,7 @@ import { spawnSync } from 'node:child_process';
 import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
+import { ANDROID_MINIMUM_JAVA_MAJOR } from './android-requirements.js';
 
 export type ToolchainSource =
   | 'override'
@@ -84,7 +85,7 @@ export function resolveAndroidToolchain(options: ResolveAndroidToolchainOptions 
   const env = options.env ?? process.env;
   const platform = options.platform ?? process.platform;
   const homeDir = options.homeDir ?? os.homedir();
-  const minimumJavaMajor = options.minimumJavaMajor ?? 17;
+  const minimumJavaMajor = options.minimumJavaMajor ?? ANDROID_MINIMUM_JAVA_MAJOR;
 
   const java = resolveJava({ cwd, env, platform, homeDir, minimumJavaMajor, overrides: options.overrides });
   const androidSdk = resolveAndroidSdk({ cwd, env, platform, homeDir, overrides: options.overrides });
