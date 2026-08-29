@@ -32,20 +32,6 @@
 - [x] Document migration notes for renamed config/types.
 - [x] Publish a deprecation plan for legacy naming/commands.
 
-## Deploid Studio UX
-- [x] Redesign Studio layout to feel workflow-first instead of terminal-first.
-- [x] Replace plain command dropdown with friendly task cards and descriptions.
-- [x] Add user-focused controls: recent folders, clearer status, run metrics, log filter/copy/clear.
-- [x] Add visual polish pass with iconography and branded empty/success/error states.
-- [x] Rebuild Studio around readiness, blockers, artifacts, devices, and quick actions instead of command-launcher UX.
-
-## Standalone Deploid Desktop
-- [x] Retire Studio as a public npm distribution and keep the workspace private.
-- [x] Rebuild the desktop interface around release readiness and explicit CLI actions.
-- [x] Bundle the CLI runtime instead of requiring a global npm installation.
-- [x] Add native AppImage/DEB, DMG/ZIP, and NSIS/portable packaging targets.
-- [x] Add native-platform GitHub Actions builds for downloadable desktop artifacts.
-
 ## Compatibility Follow-ups
 - [x] Fix `@deploid/plugin-storage` peer compatibility for Capacitor 8 projects.
 - [x] Make `deploid init` install required plugins even if optional plugin install fails.
@@ -60,12 +46,11 @@
 ## Release Workflow Foundations
 - [x] Add `deploid doctor` to audit project readiness, required tooling, and common Android setup gaps.
 - [x] Expand `deploid doctor` with richer readiness sections, output modes, and safe auto-fixes.
-- [x] Add Studio-facing doctor integration so readiness can be surfaced outside raw CLI logs.
 
 ## CLI as Core Product
-- [x] Extract reusable core command-runner APIs so external apps can integrate without shelling out blindly.
+- [x] Extract reusable core command-runner APIs so external tools can integrate without shelling out blindly.
 - [x] Rebase the CLI onto the shared command API instead of ad hoc command orchestration.
-- [x] Reposition Studio as an optional experimental client rather than the primary product direction.
+- [x] Keep the CLI as the primary product surface.
 
 ## Release Workflow Roadmap
 ### Phase 1: Release Setup and Shipping
@@ -85,5 +70,5 @@
 
 ### Phase 4: Platform Surface
 - [x] Add `deploid plugin init` and plugin validation/templates for extension authors.
-- [x] Add an optional local API/daemon mode for external apps to integrate without shelling out.
+- [x] Add an optional local API/daemon mode for external tools to integrate without shelling out.
 - [x] Publish richer external-client examples built on `@deploid/core`.
