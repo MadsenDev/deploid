@@ -374,9 +374,9 @@ async function installDependencies(cwd: string, options: InitOptions, packageMan
     }
     
     console.log('✅ Dependencies installed');
-  } catch (error) {
+  } catch {
     const command = installCommandHint(packageManager, ['@capacitor/cli', '@capacitor/core', '@capacitor/android']);
-    throw new Error(`Failed to install required dependencies. Run manually: ${command}`, { cause: error });
+    throw new Error(`Failed to install required dependencies. Run manually: ${command}`);
   }
 }
 
