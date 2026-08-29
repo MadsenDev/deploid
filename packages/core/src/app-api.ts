@@ -3,6 +3,7 @@ import { loadConfig } from './config.js';
 import { loadPlugin } from './plugin-loader.js';
 import { buildDoctorStateFromToolchain } from './doctor-state.js';
 import { withResolvedAndroidToolchainEnvironment } from './toolchain-env.js';
+import type { ToolchainOverrides } from './toolchain.js';
 import type { DeploidConfig } from './types.js';
 
 export interface CommandRunOptions {
@@ -13,6 +14,7 @@ export interface CommandRunOptions {
 }
 
 export interface DoctorRunOptions extends CommandRunOptions {
+  toolchainOverrides?: ToolchainOverrides;
   doctorOptions?: {
     json?: boolean;
     markdown?: boolean;
@@ -78,5 +80,5 @@ export async function runDoctorCommand(options: DoctorRunOptions = {}): Promise<
       androidToolchain: toolchain,
       doctorState: buildDoctorStateFromToolchain(toolchain)
     }
-  }));
+  }), options.toolchainOverrides);
 }
