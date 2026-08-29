@@ -1,7 +1,7 @@
 import { execa } from 'execa';
 import fs from 'node:fs';
 import path from 'node:path';
-import { resolveAndroidToolchain, type AndroidToolchain } from '#core';
+import { ANDROID_MINIMUM_JAVA_MAJOR, resolveAndroidToolchain, type AndroidToolchain } from '#core';
 
 interface PipelineStep {
   (context: { logger: any; config: any; cwd: string; debug?: boolean }): Promise<void>;
@@ -82,7 +82,7 @@ const plugin = {
 const buildAndroidPlugin = (): PipelineStep => runBuildAndroid;
 
 function resolveBuildToolchain(cwd: string): AndroidToolchain {
-  const toolchain = resolveAndroidToolchain({ cwd, minimumJavaMajor: 17 });
+  const toolchain = resolveAndroidToolchain({ cwd, minimumJavaMajor: ANDROID_MINIMUM_JAVA_MAJOR });
   const blocking = toolchain.issues.filter((issue) => issue.severity === 'error');
 
   if (blocking.length > 0) {
