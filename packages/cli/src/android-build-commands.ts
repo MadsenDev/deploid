@@ -39,6 +39,51 @@ async function packageAndroid(options: { debug?: boolean }): Promise<void> {
   });
 }
 
+async function buildAndroid(options: { debug?: boolean }): Promise<void> {
+  console.log('Preparing Android project...');
+  await packageAndroid(options);
+
+  checkAndroidToolchain('build');
+  const config = await loadConfig();
+  const cwd = process.cwd();
+
+  await runPluginCommand('build-android', {
+    cwd,
+    config,
+    debug: options.debug
+  });
+}
+
+interface RunOptions {
+  device?: string;
+  bootEmulator?: string;
+  force?: boolean;
+  logs?: boolean;
+  logFilter?: string;
+  debug?: boolean;
+}
+
+async function runAndroid(options: RunOptions): Promise<void> {
+  await buildAndroid(options);
+
+  const config = await loadConfig();
+  await runPluginCommand('deploy-android', {
+    cwd: process.cwd(),
+    config,
+    debug: options.debug,
+    contextExtras: {
+      deployOptions: {
+        force: Boolean(options.force),
+        launch: true,
+        device: options.device,
+        bootEmulator: options.bootEmulator,
+        logs: Boolean(options.logs),
+        logFilter: options.logFilter
+      }
+    }
+  });
+}
+
 export function registerAndroidBuildCommands(program: Command): void {
   program
     .command('package')
@@ -53,17 +98,19 @@ export function registerAndroidBuildCommands(program: Command): void {
     .description('Build web app, sync Android project, then build APK/AAB')
     .option('--debug', 'Enable debug logging')
     .action(async (options) => {
-      console.log('Preparing Android project...');
-      await packageAndroid(options);
+      await buildAndroid(options);
+    });
 
-      checkAndroidToolchain('build');
-      const config = await loadConfig();
-      const cwd = process.cwd();
-
-      await runPluginCommand('build-android', {
-        cwd,
-        config,
-        debug: options.debug
-      });
+  program
+    .command('run')
+    .description('Build, install, and launch the app on Android')
+    .option('-d, --device <id>', 'Run on a specific connected device/emulator')
+    .option('--boot-emulator <avd>', 'Boot an Android emulator before deploying')
+    .option('-f, --force', 'Uninstall and reinstall if signatures are incompatible')
+    .option('--logs', 'Tail app logs after launch')
+    .option('--log-filter <tag>', 'Logcat filter/tag to use with --logs')
+    .option('--debug', 'Enable debug logging')
+    .action(async (options) => {
+      await runAndroid(options);
     });
 }
