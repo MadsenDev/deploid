@@ -3,12 +3,24 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { ANDROID_MINIMUM_JAVA_MAJOR, resolveAndroidToolchain, type AndroidToolchain } from '#core';
 
-interface PipelineStep {
-  (context: { logger: any; config: any; cwd: string; debug?: boolean }): Promise<void>;
+interface BuildOptions {
+  release?: boolean;
 }
 
-const runBuildAndroid: PipelineStep = async ({ logger, config, cwd, debug }) => {
-  logger.info(`build-android: building APK/AAB for ${config.appName}`);
+interface PipelineContext {
+  logger: any;
+  config: any;
+  cwd: string;
+  debug?: boolean;
+  buildOptions?: BuildOptions;
+}
+
+interface PipelineStep {
+  (context: PipelineContext): Promise<void>;
+}
+
+const runBuildAndroid: PipelineStep = async ({ logger, config, cwd, debug, buildOptions }) => {
+  logger.info(`build-android: building Android artifacts for ${config.appName}`);
 
   if (debug) {
     logger.debugEnv();
@@ -44,7 +56,10 @@ const runBuildAndroid: PipelineStep = async ({ logger, config, cwd, debug }) => 
       if (debug) logAlternativeOutputs(androidPath, logger);
     }
 
-    if (config.android.signing?.keystorePath) {
+    const shouldBuildRelease = buildOptions?.release !== false;
+    if (!shouldBuildRelease) {
+      logger.info('Debug-only build requested; skipping release artifacts');
+    } else if (config.android.signing?.keystorePath) {
       logger.info('Building release AAB...');
       await runGradle(toolchain, androidPath, ['bundleRelease'], debug ? logger : undefined);
 
@@ -69,7 +84,7 @@ const plugin = {
   name: 'build-android',
   requirements: ['java', 'android-sdk'],
   plan: () => ['Validate Android toolchain and project', 'Build debug APK', 'Build signed release AAB (optional)'],
-  validate: async ({ cwd }: any) => {
+  validate: async ({ cwd }: PipelineContext) => {
     const androidPath = path.join(cwd, 'android');
     if (!fs.existsSync(androidPath)) {
       throw new Error('Android project not found. Run "deploid package" first.');
