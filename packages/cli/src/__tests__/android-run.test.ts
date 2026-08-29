@@ -14,7 +14,7 @@ function shellEscape(value: string): string {
 }
 
 describe('Android run command', () => {
-  it('builds, installs, and launches on the selected device', async () => {
+  it('builds, installs, and launches automatically when exactly one device is connected', async () => {
     const cwd = await fs.mkdtemp(path.join(os.tmpdir(), 'deploid-run-'));
     const binDir = path.join(cwd, 'bin');
     const javaHome = path.join(cwd, 'jdk');
@@ -66,7 +66,7 @@ exit 0
 `);
     await fs.chmod(adbPath, 0o755);
 
-    const result = spawnSync('/usr/bin/bash', ['-lc', `node ${shellEscape(cliEntry)} run --device pixel-usb`], {
+    const result = spawnSync('/usr/bin/bash', ['-lc', `node ${shellEscape(cliEntry)} run`], {
       cwd,
       encoding: 'utf8',
       env: {
