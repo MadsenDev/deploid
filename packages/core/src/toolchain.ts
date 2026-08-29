@@ -219,7 +219,7 @@ function resolveAndroidSdk(input: {
   const localSdk = readLocalPropertiesSdk(path.join(input.cwd, 'android', 'local.properties'));
   addCandidate(candidates, localSdk, 'local-properties');
 
-  for (const sdkPath of knownAndroidSdkPaths(input.platform, input.homeDir)) {
+  for (const sdkPath of knownAndroidSdkPaths(input.platform, input.homeDir, input.env)) {
     addCandidate(candidates, sdkPath, 'known-location');
   }
 
@@ -322,9 +322,9 @@ function looksLikeAndroidSdk(root: string): boolean {
   return ['platform-tools', 'platforms', 'cmdline-tools', 'build-tools', 'tools'].some((name) => fs.existsSync(path.join(root, name)));
 }
 
-function knownAndroidSdkPaths(platform: NodeJS.Platform, homeDir: string): string[] {
+function knownAndroidSdkPaths(platform: NodeJS.Platform, homeDir: string, env: NodeJS.ProcessEnv): string[] {
   if (platform === 'win32') {
-    const localAppData = process.env.LOCALAPPDATA;
+    const localAppData = env.LOCALAPPDATA;
     return localAppData ? [path.join(localAppData, 'Android', 'Sdk')] : [];
   }
   if (platform === 'darwin') return [path.join(homeDir, 'Library', 'Android', 'sdk')];
