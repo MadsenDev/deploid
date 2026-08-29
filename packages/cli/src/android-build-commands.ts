@@ -93,7 +93,8 @@ async function runAndroid(options: RunOptions): Promise<void> {
           device: options.device,
           bootEmulator: options.bootEmulator,
           logs: Boolean(options.logs),
-          logFilter: options.logFilter
+          logFilter: options.logFilter,
+          requireSingleDevice: true
         }
       }
     });
