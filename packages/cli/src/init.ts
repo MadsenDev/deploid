@@ -49,11 +49,18 @@ export async function initProject(options: InitOptions): Promise<void> {
     throw new Error(`Packaging engine "${options.packaging}" is not supported in Deploid 2.0. Use "capacitor".`);
   }
 
-  // Auto-detect framework from package.json if not specified
+  // Auto-detect framework from package.json if not specified.
+  // Never silently assume Vite when detection fails.
   if (!options.framework) {
     const detected = detectFramework(cwd);
-    options.framework = detected ?? 'vite';
-    if (detected) console.log(`✅ Auto-detected framework: ${detected}`);
+    if (detected) {
+      options.framework = detected;
+      console.log(`✅ Auto-detected framework: ${detected}`);
+    } else if (options.yes) {
+      throw new Error('Could not detect the web framework. Pass --framework vite|next|cra|static when using --yes.');
+    } else {
+      options.framework = await askFramework();
+    }
   }
 
   const webDir = getWebDir(options.framework);
@@ -103,6 +110,30 @@ export async function initProject(options: InitOptions): Promise<void> {
   printNextSteps(cwd, options);
 }
 
+async function askFramework(): Promise<'vite' | 'next' | 'cra' | 'static'> {
+  const rl = readline.createInterface({ input: process.stdin, output: process.stdout });
+  const question = (prompt: string): Promise<string> => new Promise((resolve) => rl.question(prompt, resolve));
+  try {
+    console.log('\nCould not detect the web framework automatically.');
+    console.log('  1. Vite');
+    console.log('  2. Next.js static export');
+    console.log('  3. Create React App');
+    console.log('  4. Static files');
+    const answer = (await question('Framework [1-4]: ')).trim();
+    const frameworks: Record<string, 'vite' | 'next' | 'cra' | 'static'> = {
+      '1': 'vite',
+      '2': 'next',
+      '3': 'cra',
+      '4': 'static'
+    };
+    const framework = frameworks[answer];
+    if (!framework) throw new Error('Choose a framework from 1 to 4, or rerun with --framework.');
+    return framework;
+  } finally {
+    rl.close();
+  }
+}
+
 function generateConfig(options: InitOptions, packageManager: PackageManagerProfile, metadata: AppMetadata): string {
   const { packaging, firebase, firebaseProjectId } = options;
   const framework = options.framework ?? 'vite';
@@ -143,9 +174,6 @@ const config: DeploidConfig = {
   assets: {
     source: '${metadata.assetsSource}',
     output: 'assets-gen/',
-  },
-  publish: {
-    github: { repo: '${metadata.authorName.toLowerCase().replace(/\s+/g, '-')}/your-repo', draft: true },
   },
 };
 
@@ -346,10 +374,9 @@ async function installDependencies(cwd: string, options: InitOptions, packageMan
     }
     
     console.log('✅ Dependencies installed');
-  } catch (error) {
-    console.log('⚠️  Failed to install dependencies automatically');
-    console.log('Please run manually:');
-    console.log(`  ${installCommandHint(packageManager, ['@capacitor/cli', '@capacitor/core', '@capacitor/android'])}`);
+  } catch {
+    const command = installCommandHint(packageManager, ['@capacitor/cli', '@capacitor/core', '@capacitor/android']);
+    throw new Error(`Failed to install required dependencies. Run manually: ${command}`);
   }
 }
 
