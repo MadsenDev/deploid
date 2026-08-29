@@ -1,4 +1,6 @@
 declare module '#core' {
+  export const ANDROID_MINIMUM_JAVA_MAJOR: number;
+
   export interface AndroidToolchain {
     java?: {
       home: string;
