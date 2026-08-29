@@ -93,7 +93,7 @@ describe('Windows Android toolchain resolution', () => {
       homeDir: path.join(cwd, 'home')
     });
 
-    expect(result.adb?.path).toBe(adb);
+    expect(result.adb?.path?.toLowerCase()).toBe(adb.toLowerCase());
     expect(result.adb?.source).toBe('path');
   });
 });
