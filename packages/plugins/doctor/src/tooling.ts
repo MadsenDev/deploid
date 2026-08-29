@@ -1,16 +1,4 @@
-export type CheckStatus = 'pass' | 'warn' | 'fail';
-export type WorkflowId = 'init' | 'build' | 'release' | 'deploy' | 'desktop';
-
-export interface CheckResult {
-  id: string;
-  category: 'project' | 'workflows' | 'tooling' | 'plugins' | 'release';
-  title: string;
-  status: CheckStatus;
-  message: string;
-  details?: string;
-  workflows: WorkflowId[];
-  fixable?: boolean;
-}
+import type { CheckResult, WorkflowId } from './types.js';
 
 export interface SharedDoctorState {
   toolchain?: {

@@ -18,8 +18,7 @@ const WORKFLOW_TITLES: Record<WorkflowId, string> = {
   init: 'Project setup',
   build: 'Android build',
   release: 'Release readiness',
-  deploy: 'Device deploy',
-  desktop: 'Desktop packaging'
+  deploy: 'Device deploy'
 };
 
 const plugin = {
@@ -98,7 +97,7 @@ function inspectResolvedAndroidEnvironment(androidDir: string, state?: SharedDoc
     const licensePath = path.join(sdkPath, 'licenses', 'android-sdk-license');
     checks.push(fs.existsSync(licensePath)
       ? pass('android-sdk-licenses', 'SDK licenses', 'Android SDK license file is present.', ['build', 'release'])
-      : warn('android-sdk-licenses', 'SDK licenses', 'Android SDK license file was not found.', ['build', 'release'], 'Run sdkmanager --licenses or `deploid doctor --fix`.', true));
+      : warn('android-sdk-licenses', 'SDK licenses', 'Android SDK license file was not found.', ['build', 'release'], 'Run `sdkmanager --licenses` and accept the Android SDK licenses.'));
 
     if (!fs.existsSync(path.join(sdkPath, 'build-tools'))) {
       checks.push(warn('android-build-tools', 'Android build tools', 'Android SDK build-tools directory is missing.', ['build', 'release'], 'Install Android SDK Build Tools.'));
@@ -110,7 +109,8 @@ function inspectResolvedAndroidEnvironment(androidDir: string, state?: SharedDoc
 }
 
 function checkConnectedDevices(adbPath: string): CheckResult {
-  const run = spawnSync(adbPath, ['devices'], { encoding: 'utf8' });
+  const run = spawnSync(adbPath, ['devices'], { encoding: 'utf8', timeout: 5000 });
+  if (run.error) return warn('adb-devices', 'Android devices', 'ADB is resolved but device enumeration could not complete.', ['deploy'], run.error.message);
   if (run.status !== 0) return warn('adb-devices', 'Android devices', 'ADB is resolved but device enumeration failed.', ['deploy'], run.stderr?.trim());
   const devices = `${run.stdout || ''}`.split(/\r?\n/).filter((line) => /\t/.test(line));
   const unavailable = devices.filter((line) => /\t(unauthorized|offline)$/.test(line));
