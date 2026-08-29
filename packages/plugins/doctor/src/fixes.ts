@@ -3,8 +3,6 @@ import path from 'node:path';
 import type { SharedDoctorState } from './tooling.js';
 import type { CheckResult, FixResult, ProjectState } from './types.js';
 
-const ANDROID_SDK_LICENSE_HASHES = ['8933bad161af4178b1185d1a37fbf41ea5269c55', 'd56f5187479451eabf01fb78af6dfcb131a6481e'];
-const ANDROID_SDK_PREVIEW_LICENSE_HASHES = ['84831b9409646a918e30573bab4c9c91346d8abd'];
 const DEFAULT_KEYSTORE = 'secrets/android-upload-keystore.jks';
 const DEFAULT_PLAY_ACCOUNT = 'secrets/play-service-account.json';
 const STORE_PASSWORD_ENV = 'DEPLOID_ANDROID_STORE_PASSWORD';
@@ -16,7 +14,7 @@ export function applyFixes(state: ProjectState, checks: CheckResult[], doctorSta
 
   ensureAssetsDirectory(state, checks, fixes);
   ensureCapacitorConfig(state, checks, fixes);
-  ensureAndroidSdkFiles(state, checks, sdkPath, fixes);
+  ensureAndroidProjectSdkPath(state, sdkPath, fixes);
   ensureReleaseConfig(state, fixes);
   ensureEnvExample(state, fixes);
   ensureSensitivePathsIgnored(state, fixes);
@@ -49,22 +47,12 @@ function ensureCapacitorConfig(state: ProjectState, checks: CheckResult[], fixes
   fixes.push(applied('capacitor-config', 'Capacitor config', 'Synced capacitor.config.json from Deploid config.'));
 }
 
-function ensureAndroidSdkFiles(state: ProjectState, checks: CheckResult[], sdkPath: string | undefined, fixes: FixResult[]): void {
-  if (!sdkPath) return;
-  if (fs.existsSync(state.androidDir)) {
-    const localProperties = path.join(state.androidDir, 'local.properties');
-    if (readSdkDirProperty(localProperties) !== sdkPath) {
-      writeSdkDirProperty(localProperties, sdkPath);
-      fixes.push(applied('android-local-properties', 'Android SDK path', `Pinned sdk.dir to ${sdkPath}.`));
-    }
-  }
-  if (!checks.some((check) => check.id === 'android-sdk-licenses' && check.status !== 'pass')) return;
-  try {
-    writeAndroidLicenseFiles(sdkPath);
-    fixes.push(applied('android-sdk-licenses', 'Android SDK licenses', 'Wrote standard Android SDK license hash files.'));
-  } catch (error) {
-    fixes.push({ id: 'android-sdk-licenses', title: 'Android SDK licenses', status: 'failed', message: error instanceof Error ? error.message : String(error) });
-  }
+function ensureAndroidProjectSdkPath(state: ProjectState, sdkPath: string | undefined, fixes: FixResult[]): void {
+  if (!sdkPath || !fs.existsSync(state.androidDir)) return;
+  const localProperties = path.join(state.androidDir, 'local.properties');
+  if (readSdkDirProperty(localProperties) === sdkPath) return;
+  writeSdkDirProperty(localProperties, sdkPath);
+  fixes.push(applied('android-local-properties', 'Android SDK path', `Pinned sdk.dir to ${sdkPath}.`));
 }
 
 function ensureReleaseConfig(state: ProjectState, fixes: FixResult[]): void {
@@ -155,7 +143,11 @@ function ensureObjectProperty(source: string, parentPath: string[], propertyName
   if (new RegExp(`(^|\\n)\\s*${escapeRegExp(propertyName)}\\s*:`, 'm').test(body)) return source;
   const indent = `${lineIndentAt(source, range.open)}  `;
   const insertion = `\n${indent}${propertyName}: {},`;
-  return `${source.slice(0, range.close)}${insertion}\n${lineIndentAt(source, range.open)}${source.slice(range.close)}`;
+  return `${source.slice(0, range.close)}${insertion}\n${lineIndentAt(source, range.open)}${currentSlice(source, range.close)}`;
+}
+
+function currentSlice(source: string, index: number): string {
+  return source.slice(index);
 }
 
 function findObjectRange(source: string, pathSegments: string[]): { open: number; close: number } | null {
@@ -230,13 +222,6 @@ function writeSdkDirProperty(filePath: string, sdkPath: string): void {
     ? existing.replace(/^sdk\.dir=.*$/m, sdkLine)
     : `${existing}${existing.length > 0 && !existing.endsWith('\n') ? '\n' : ''}${sdkLine}\n`;
   fs.writeFileSync(filePath, next);
-}
-
-function writeAndroidLicenseFiles(sdkPath: string): void {
-  const licensesDir = path.join(sdkPath, 'licenses');
-  fs.mkdirSync(licensesDir, { recursive: true });
-  fs.writeFileSync(path.join(licensesDir, 'android-sdk-license'), `${ANDROID_SDK_LICENSE_HASHES.join('\n')}\n`);
-  fs.writeFileSync(path.join(licensesDir, 'android-sdk-preview-license'), `${ANDROID_SDK_PREVIEW_LICENSE_HASHES.join('\n')}\n`);
 }
 
 function lineIndentAt(source: string, index: number): string {
