@@ -51,7 +51,7 @@ async function packageAndroid(options: ToolchainOptions & { debug?: boolean }): 
   }, toolchainOverrides(options));
 }
 
-async function buildAndroid(options: ToolchainOptions & { debug?: boolean }): Promise<void> {
+async function buildAndroid(options: ToolchainOptions & { debug?: boolean; release?: boolean }): Promise<void> {
   console.log('Preparing Android project...');
   await packageAndroid(options);
 
@@ -63,7 +63,10 @@ async function buildAndroid(options: ToolchainOptions & { debug?: boolean }): Pr
     await runPluginCommand('build-android', {
       cwd,
       config,
-      debug: options.debug
+      debug: options.debug,
+      contextExtras: {
+        buildOptions: { release: options.release !== false }
+      }
     });
   }, toolchainOverrides(options));
 }
@@ -78,7 +81,7 @@ interface RunOptions extends ToolchainOptions {
 }
 
 async function runAndroid(options: RunOptions): Promise<void> {
-  await buildAndroid(options);
+  await buildAndroid({ ...options, release: false });
 
   const config = await loadConfig();
   await withResolvedAndroidToolchainEnvironment(process.cwd(), async () => {
